@@ -6,7 +6,13 @@ set(CMAKE_CXX_STANDARD 23)
 find_package(XercesC REQUIRED)
 find_package(Protobuf REQUIRED)
 
-add_executable(X4BuildGraph main.cpp util/common_util.h util/xml_attr_util.h util/xml_node_util.h gen/ware_types.pb.h gen/ware_types.pb.cc)
+add_executable(X4BuildGraph main.cpp
+        util/common_util.h
+        util/xml_attr_util.h
+        util/xml_node_util.h
+        gen/ware_types.pb.h
+        gen/ware_types.pb.cc
+        x4util/lib_wares_util.h)
 
 #
 #add_library(Util SHARED util/common_util.h)
