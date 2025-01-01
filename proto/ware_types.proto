@@ -1,0 +1,79 @@
+syntax="proto3";
+
+enum StorageType {
+  STORAGE_TYPE_UNSPECIFIED = 0;
+  STORAGE_TYPE_GAS = 1;
+  STORAGE_TYPE_SOLID = 2;
+  STORAGE_TYPE_CONTAINER = 10;
+  // maybe more?
+}
+
+// wares.xml:<ware id="hydrogen" transport="liquid" volume="6" tags="economy minable">
+// wares.xml:<ware id="ore" transport="solid" volume="10" tags="economy minable">
+message RawMaterial {
+  string id = 1;
+  StorageType storage_type = 2;
+  uint32 volume = 3;
+}
+
+// wares.xml: <ware id="hullparts" group="hightech" transport="container" volume="12" tags="container economy">
+// wares.xml: <ware id="plasmaconductors" group="hightech" transport="container" volume="32" tags="container economy">
+message RefinedProduct {
+  string id = 1;
+  StorageType storage_type = 2;
+  uint32 volume = 3;
+  repeated string required_ware_ids = 4;
+  // maybe include tier?
+}
+
+//// TODO - this causes protobufs to do a lot of copying of data
+//// better to just link to the ware names, or don't persist the Required wares
+//message RequiredWare {
+//  oneof required_ware {
+//    RawMaterial raw_material = 1;
+//    RefinedProduct refined_product = 2;
+//  }
+//  uint32 amount = 3;
+//}
+
+
+message StorageModule {
+  string id = 1;
+  StorageType storage_type = 2;
+  uint32 storage_capacity = 3;
+}
+
+// prod_gen_hullparts_macro
+//############## -> wares.xml:ware_id=module_gen_prod_hullparts_01
+// -> assets/structures/production/macros/prod_gen_hullparts_macro.xml:'production wares'=hullparts
+message ProductionModule {
+  string id = 1;
+  // This contains the details of what's needed to make it, so can be used to build
+  // the dependency graph
+  RefinedProduct produced_product = 2;
+  uint32 workforce = 3;
+}
+
+// Docks and Piers
+// $USER/constructionplans.xml:entry.macro:pier_arg_harbor_03_macro -> (class=pier)
+//############## -> wares.xml:'component ref'="pier_arg_harbor_03_macro" <- 'ware id':module_arg_pier_l_03 ->
+// -> assets/structures/dock/macros/pier_arg_harbor_03_macro.xml (class=pier) vs (class=dockarea)
+enum DockModuleType {
+  DOCK_MODULE_TYPE_UNSPECIFIED = 0;
+  DOCK_MODULE_TYPE_PIER = 1; // class=pier
+  DOCK_MODULE_TYPE_DOCK = 2; // class=dockarea
+}
+message DockModule {
+  string id = 1;
+  DockModuleType dock_type = 2;
+}
+
+//// TODO
+//message HabitatModule {
+//
+//}
+
+// TODO
+//message DefenseModule {
+//
+//}
