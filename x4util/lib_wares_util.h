@@ -38,11 +38,6 @@ inline bool isRefinedProduct(const DOMNode& domNode) {
     return tagsAttr ? attrContainsAll(*tagsAttr, required_tags) : false;
 }
 
-struct EconomyWare {
-    RawMaterial* rawMaterial;
-    RefinedProduct* refinedProduct;
-};
-
 inline StorageType toStorageType(const string& storageType) {
     if (storageType == "liquid")
         return STORAGE_TYPE_GAS; // TODO convert 'GAS' to 'LIQUID' then use string hacks for this
@@ -101,17 +96,11 @@ inline unordered_map<string,EconomyWare> extractEconomyWares(const DOMElement* d
     }
     // Now we can process the dependencies for refined products
     // production/primary/ware subNodes with "ware" attribute value
-    for (auto idNodePair : refinedProductNodes) {
-        // Need ID & required wares
-        auto nodeId = idNodePair.first;
-        auto reqWareNames = getRequiredWareNames(idNodePair.second);
-        auto refinedProduct = refinedProducts[nodeId];
-        for (auto reqWareName: reqWareNames) {
-            // string reqWare = refinedProduct->add_required_wares();
-
-            // refine
-            // auto reqWare = refinedProduct->add_required_wares();
-            // reqWare->set(reqWareName);
+    for (auto& [name, product_node] : refinedProductNodes) {
+        auto refined_product = refinedProducts[name];
+        auto reqWareNames = getRequiredWareNames(product_node);
+        for (const auto& reqWareName: reqWareNames) {
+            refined_product->add_required_ware_ids(reqWareName);
         }
     }
 
@@ -120,7 +109,7 @@ inline unordered_map<string,EconomyWare> extractEconomyWares(const DOMElement* d
     for (auto kvPair : rawMaterials) {
         EconomyWare economyWare;
         auto val = kvPair.second;
-        economyWare.rawMaterial = val;
+        economyWare.set_allocated_raw_material(val);
         economyWares[kvPair.first] = economyWare;
         google::protobuf::TextFormat::PrintToString(*val, &jsonString);
         cout <<  jsonString << endl;
@@ -128,7 +117,7 @@ inline unordered_map<string,EconomyWare> extractEconomyWares(const DOMElement* d
     for (auto kvPair : refinedProducts) {
         EconomyWare economyWare;
         auto val = kvPair.second;
-        economyWare.refinedProduct = val;
+        economyWare.set_allocated_refined_product(val);
         economyWares[kvPair.first] = economyWare;
         google::protobuf::TextFormat::PrintToString(*val, &jsonString);
         cout <<  jsonString << endl;

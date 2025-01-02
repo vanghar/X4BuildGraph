@@ -14,6 +14,7 @@
 #include <boost/graph/adjacency_list.hpp>
 #include <boost/graph/graphviz.hpp>
 #include <fstream>
+#include <format>
 //
 using namespace xercesc;
 using namespace std;
@@ -112,27 +113,25 @@ void generateWaresGraph(std::unordered_map<string,EconomyWare> &ecoWares) {
 
     // TOOD - graph looks off
     std::unordered_map<string,unsigned long> vertices;
-    Graph g(ecoWares.size());
-    for (auto kvPair : ecoWares) {
-        auto ecoName = kvPair.first;
-        auto v1 = add_vertex(ecoName, g);
-        vertices[ecoName] = v1;
-    }
+     Graph g;//(ecoWares.size());
+     for (auto [eco_name, eco_ware] : ecoWares) {
+         auto v1 = add_vertex(eco_name, g);
+         vertices[eco_name] = v1;
+     }
 
-    for (auto kvPair : ecoWares) {
-        auto ecoName = kvPair.first;
-        auto ecoWare = kvPair.second;
-        try {
-            if (auto refinedProduct = ecoWare.refinedProduct) {
-                for (auto reqName : refinedProduct->required_ware_ids()) {
-                    // auto reqWare = ecoWares[reqName];
-                    add_edge(vertices[reqName],vertices[ecoName], g);
-                }
-            }
-        }
-        catch (...) {}
-    }
-
+     for (auto [eco_name, eco_ware] : ecoWares) {
+         if (eco_ware.has_refined_product()) {
+             auto refined_product = eco_ware.refined_product();
+             for (const auto& req_name : refined_product.required_ware_ids()) {
+                 // auto reqWare = ecoWares[reqName];
+                 auto source_vertex =vertices[req_name];
+                 auto target_vertex = vertices[eco_name];
+                 auto log_msg = format("{}({}) -> {}({})", source_vertex, req_name, target_vertex, eco_name);
+                 cout << log_msg << endl;
+                 add_edge(source_vertex,target_vertex, g);
+             }
+         }
+     }
      std::ofstream dot_file("graph.dot");
 //     ///auto label_writer = make_label_writer(get(vertex_name, g));
 // //    auto label_writer = make_label_writer(name);

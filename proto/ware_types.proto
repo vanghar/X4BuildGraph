@@ -26,6 +26,13 @@ message RefinedProduct {
   // maybe include tier?
 }
 
+message EconomyWare {
+  oneof ware_union {
+    RawMaterial raw_material = 1;
+    RefinedProduct refined_product = 2;
+  }
+}
+
 //// TODO - this causes protobufs to do a lot of copying of data
 //// better to just link to the ware names, or don't persist the Required wares
 //message RequiredWare {
