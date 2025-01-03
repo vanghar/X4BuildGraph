@@ -3,14 +3,10 @@
 #include <ranges>
 #include <unordered_map>
 
-#include "x4util/lib_wares_util.h"
-#include <xercesc/parsers/XercesDOMParser.hpp>
 #include <xercesc/dom/DOM.hpp>
 #include <xercesc/sax/HandlerBase.hpp>
 #include <xercesc/util/XMLString.hpp>
 #include <xercesc/util/PlatformUtils.hpp>
-// #include <boost/algorithm/string.hpp>
-// #include <google/protobuf/text_format.h>
 #include <boost/graph/adjacency_list.hpp>
 #include <boost/graph/graphviz.hpp>
 #include <fstream>
@@ -18,10 +14,10 @@
 
 #include "src/x4_wares_xml.h"
 #include "src/xml_parser.h"
-//
+
 using namespace xercesc;
 using namespace std;
-// using namespace boost;
+using namespace boost;
 #include <boost/graph/graph_traits.hpp>
 
 
@@ -29,54 +25,42 @@ using namespace std;
 
 // TODO - read file locations from command line
 
-// template <typename T>
-// std::unique_ptr<T> uptr(T* ptr) {
-//     return std::unique_ptr<T>(ptr);
-// }
 
 
-
-// template<typename T>
-// T* createProto() {
-//     return google::protobuf::Arena::CreateMessage<T>(&ARENA);
-// }
-
-// typedef adjacency_list<vecS, vecS, directedS> Graph;
-
-
-std::unordered_map<string,EconomyWare> get_eco_wares() {
-    auto x4_wares = X4_WaresXml::create("/mnt/d/Games/Steam/steamapps/common/X4 Foundations/unpacked/libraries/wares.xml");
+std::unordered_map<string, EconomyWare> get_eco_wares() {
+    auto x4_wares = X4_WaresXml::create(
+        "/mnt/d/Games/Steam/steamapps/common/X4 Foundations/unpacked/libraries/wares.xml");
     return x4_wares.extract_economy_wares();
 }
 
 /**
  * Fetches the dependency graph of raw materials and produced wares
  */
-void get_wares_graph(std::unordered_map<string,EconomyWare> &ecoWares) {
-    typedef adjacency_list<vecS, vecS, directedS, property<boost::vertex_name_t, std::string>> Graph;
+void get_wares_graph(std::unordered_map<string, EconomyWare> &ecoWares) {
+    typedef adjacency_list<vecS, vecS, directedS, property<boost::vertex_name_t, std::string> > Graph;
 
-    std::unordered_map<string,unsigned long> vertices;
-     Graph g;
-     for (const auto& [eco_name, eco_ware] : ecoWares) {
-         auto v1 = add_vertex(eco_name, g);
-         vertices[eco_name] = v1;
-     }
+    std::unordered_map<string, unsigned long> vertices;
+    Graph g;
+    for (const auto &[eco_name, eco_ware]: ecoWares) {
+        auto v1 = add_vertex(eco_name, g);
+        vertices[eco_name] = v1;
+    }
 
-     for (const auto& [eco_name, eco_ware] : ecoWares) {
-         if (eco_ware.has_refined_product()) {
-             auto refined_product = eco_ware.refined_product();
-             for (const auto& req_name : refined_product.required_ware_ids()) {
-                 // auto reqWare = ecoWares[reqName];
-                 auto source_vertex =vertices[req_name];
-                 auto target_vertex = vertices[eco_name];
-                 auto log_msg = format("{}({}) -> {}({})", source_vertex, req_name, target_vertex, eco_name);
-                 cout << log_msg << endl;
-                 add_edge(source_vertex,target_vertex, g);
-             }
-         }
-     }
-     std::ofstream dot_file("graph.dot");
-     write_graphviz(dot_file, g, make_label_writer(get(vertex_name, g)));
+    for (const auto &[eco_name, eco_ware]: ecoWares) {
+        if (eco_ware.has_refined_product()) {
+            auto refined_product = eco_ware.refined_product();
+            for (const auto &req_name: refined_product.required_ware_ids()) {
+                // auto reqWare = ecoWares[reqName];
+                auto source_vertex = vertices[req_name];
+                auto target_vertex = vertices[eco_name];
+                auto log_msg = format("{}({}) -> {}({})", source_vertex, req_name, target_vertex, eco_name);
+                cout << log_msg << endl;
+                add_edge(source_vertex, target_vertex, g);
+            }
+        }
+    }
+    std::ofstream dot_file("graph.dot");
+    write_graphviz(dot_file, g, make_label_writer(get(vertex_name, g)));
 }
 
 /**
@@ -94,8 +78,8 @@ void get_wares_graph(std::unordered_map<string,EconomyWare> &ecoWares) {
  *    from the X4 .xml files.
  */
 void generateModuleGraph() {
-
 }
+
 // TIP To <b>Run</b> code, press <shortcut actionId="Run"/> or
 // click the <icon src="AllIcons.Actions.Execute"/> icon in the gutter.
 int main() {

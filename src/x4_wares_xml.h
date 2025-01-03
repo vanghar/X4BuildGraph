@@ -22,7 +22,6 @@ private:
     inline static const string WARE_NODE_NAME = "ware";
     inline static const std::string TAGS_ATTRIBUTE_NAME ="tags";
 
-    // TODO - make these static
     static bool is_ware(const DOMNode& dom_node);
     static bool is_raw_material(const DOMNode& dom_node);
     static bool is_refined_product(const DOMNode& dom_node);

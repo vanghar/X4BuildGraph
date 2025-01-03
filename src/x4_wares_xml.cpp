@@ -96,6 +96,7 @@ unordered_map<string,EconomyWare> X4_WaresXml::_extract_economy_wares(DOMElement
     std::unordered_map<string, RefinedProduct*> refined_products;
     std::unordered_map<string,DOMNode*> refined_product_nodes;
 
+    // TODO - this can be simplified by just building the EconomyWare types immediately
     for (auto child_node : child_nodes["ware"]) {
         if (is_raw_material(*child_node)) {
             auto raw_material = new RawMaterial();

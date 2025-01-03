@@ -12,7 +12,6 @@ add_executable(X4BuildGraph main.cpp
         util/xml_node_util.h
         gen/ware_types.pb.h
         gen/ware_types.pb.cc
-        x4util/lib_wares_util.h
         src/xml_parser.cpp
         src/xml_parser.h
         src/x4_wares_xml.cpp
