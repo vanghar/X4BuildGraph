@@ -43,6 +43,7 @@ message EconomyWare {
 //  uint32 amount = 3;
 //}
 
+// TODO - rename this to be more generic
 
 message StorageModule {
   string id = 1;
@@ -55,10 +56,11 @@ message StorageModule {
 // -> assets/structures/production/macros/prod_gen_hullparts_macro.xml:'production wares'=hullparts
 message ProductionModule {
   string id = 1;
+  string product_name = 2;
+  uint32 workforce = 3;
   // This contains the details of what's needed to make it, so can be used to build
   // the dependency graph
-  RefinedProduct produced_product = 2;
-  uint32 workforce = 3;
+  // TODO - add RefinedProduct field
 }
 
 // Docks and Piers

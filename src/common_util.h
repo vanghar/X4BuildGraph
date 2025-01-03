@@ -6,7 +6,10 @@
 #define COMMON_UTIL_H
 
 #include <iostream>
+#include <optional>
+#include <unordered_map>
 #include <unordered_set>
+#include <boost/algorithm/string.hpp>
 
 using namespace std;
 
@@ -29,6 +32,12 @@ auto get_optional(T&& map, K&& key)
     auto it = map.find(std::forward<K>(key));
     if (it == map.end()) return optional<typename std::decay<T>::type::mapped_type>{};
     return optional<typename std::decay<T>::type::mapped_type>{it->second};
+}
+
+inline vector<string> split_delimited(const string& raw_value, const string& separator) {
+    vector<string> attr_values;
+    boost::split(attr_values, raw_value, boost::is_any_of(separator));
+    return attr_values;
 }
 
 #endif //COMMON_UTIL_H

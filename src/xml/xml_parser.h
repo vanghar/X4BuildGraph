@@ -6,8 +6,6 @@
 #define XML_PARSER_H
 #include <memory>
 #include <string>
-#include <xercesc/dom/DOMDocument.hpp>
-#include <xercesc/dom/DOMException.hpp>
 #include <xercesc/parsers/XercesDOMParser.hpp>
 
 using namespace std;
@@ -19,6 +17,7 @@ public:
     static XmlParser create(const string& file_path);
     [[nodiscard]] DOMElement& root_element() const;
 
+    // TODO - move to cpp implementation
     XmlParser(XmlParser&& other) noexcept : _xml_parser(std::move(other._xml_parser)) {}
     XmlParser& operator=(XmlParser&&) noexcept { return *this; }
 
@@ -31,6 +30,7 @@ private:
     static void parse_document(const string& file_path, XercesDOMParser& dom_parser);
 
     XmlParser() = default;
+    // TODO - move to cpp implementation
     explicit XmlParser(unique_ptr<XercesDOMParser>&& xml_parser) : _xml_parser(std::move(xml_parser)) {}
 };
 

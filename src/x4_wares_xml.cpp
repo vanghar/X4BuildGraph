@@ -7,14 +7,14 @@
 #include <string>
 #include <vector>
 #include <xercesc/dom/DOMNode.hpp>
-#include "../util/xml_node_util.h"
-#include "../util/xml_attr_util.h"
+#include "xml/xml_node_util.h"
+#include "xml/xml_attr_util.h"
 
 using namespace std;
 using namespace xercesc;
 
 /*******************************************************************************
-* Helper methods
+* Helper functions
 *******************************************************************************/
 StorageType to_storage_type(const string& storage_type) {
     if (storage_type == "liquid")
@@ -49,41 +49,27 @@ vector<string> get_required_ware_names(xercesc_3_3::DOMNode* ware_node) {
     return required_ware_names;
 }
 
-/*******************************************************************************
-* Class methods
-*******************************************************************************/
-X4_WaresXml X4_WaresXml::create(const string& file_path) {
-    auto xml_parser = XmlParser::create(file_path);
-    X4_WaresXml wares_xml(std::move(xml_parser));
-    return wares_xml;
-}
-
-bool X4_WaresXml::is_ware(const DOMNode& dom_node) {
+bool is_ware(const DOMNode& dom_node) {
     const auto node_name = xml_to_str(dom_node.getNodeName());
-    return node_name == WARE_NODE_NAME;
+    return node_name == "ware";
 }
 
-bool X4_WaresXml::is_raw_material(const DOMNode& dom_node) {
+bool is_raw_material(const DOMNode& dom_node) {
     if (! is_ware(dom_node))
         return false;
-    const auto tags_attr = get_named_attr(dom_node, TAGS_ATTRIBUTE_NAME);
-    const vector<string> required_tags = {"economy", "mineral"};
-    return tags_attr ? attr_contains_all(*tags_attr, required_tags) : false;
+    const auto tags_attr = get_named_attr(dom_node, "tags");
+    return tags_attr ? string_attr_contains_all(*tags_attr, {"economy", "mineral"}) : false;
 }
 
-bool X4_WaresXml::is_refined_product(const DOMNode& dom_node) {
+bool is_refined_product(const DOMNode& dom_node) {
     if (! is_ware(dom_node))
         return false;
-    const auto tags_attr = get_named_attr(dom_node, TAGS_ATTRIBUTE_NAME);
-    const vector<string> required_tags = {"economy", "container"};
-    return tags_attr ? attr_contains_all(*tags_attr, required_tags) : false;
+    const auto tags_attr = get_named_attr(dom_node, "tags");
+    return tags_attr ? string_attr_contains_all(*tags_attr, {"economy", "container"}) : false;
 }
 
-unordered_map<string,EconomyWare> X4_WaresXml::extract_economy_wares() const {
-    return _extract_economy_wares(_xml_parser.root_element());
-}
 
-unordered_map<string,EconomyWare> X4_WaresXml::_extract_economy_wares(DOMElement& dom_element) {
+unordered_map<string,EconomyWare> extract_economy_wares_internal(DOMElement& dom_element) {
     auto child_nodes = get_child_nodes(dom_element);
 
     // Protobuf types here will serve as inner messages in EconomyWare messages
@@ -137,5 +123,15 @@ unordered_map<string,EconomyWare> X4_WaresXml::_extract_economy_wares(DOMElement
     return economy_wares;
 }
 
+/*******************************************************************************
+* Class methods
+*******************************************************************************/
+X4_WaresXml X4_WaresXml::create(const string& file_path) {
+    auto xml_parser = XmlParser::create(file_path);
+    X4_WaresXml wares_xml(std::move(xml_parser));
+    return wares_xml;
+}
 
-
+unordered_map<string,EconomyWare> X4_WaresXml::extract_economy_wares() const {
+    return extract_economy_wares_internal(_xml_parser.root_element());
+}

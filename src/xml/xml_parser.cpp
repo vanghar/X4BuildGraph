@@ -5,7 +5,7 @@
 #include "xml_parser.h"
 #include <xercesc/framework/LocalFileInputSource.hpp>
 #include <xercesc/sax/HandlerBase.hpp>
-#include "../util/xml_node_util.h"
+#include "xml_node_util.h"
 #include <iostream>
 
 using namespace std;

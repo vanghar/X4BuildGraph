@@ -7,13 +7,17 @@ find_package(XercesC REQUIRED)
 find_package(Protobuf REQUIRED)
 
 add_executable(X4BuildGraph main.cpp
-        util/common_util.h
-        util/xml_attr_util.h
-        util/xml_node_util.h
+        src/common_util.h
+        src/xml/xml_attr_util.h
+        src/xml/xml_attr_util.cpp
+        src/xml/xml_node_util.h
+        src/xml/xml_node_util.cpp
+        src/xml/xml_parser.h
+        src/xml/xml_parser.cpp
+
         gen/ware_types.pb.h
         gen/ware_types.pb.cc
-        src/xml_parser.cpp
-        src/xml_parser.h
+
         src/x4_wares_xml.cpp
         src/x4_wares_xml.h
         src/x4_modules_xml.cpp
