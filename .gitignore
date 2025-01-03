@@ -1,0 +1,11 @@
+/cmake_install.cmake
+/CMakeCache.txt
+/graph.dot
+/Makefile
+/X4BuildGraph
+/gen/
+/CMakeFiles/
+/cmake-build-debug/
+/.cmake/
+/.idea/
+/Testing/

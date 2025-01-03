@@ -7,7 +7,6 @@
 
 #include "../util/xml_attr_util.h"
 #include "../util/xml_node_util.h"
-#include "../util/common_util.h"
 #include "../gen/ware_types.pb.h"
 #include <google/protobuf/text_format.h>
 
@@ -16,114 +15,106 @@ const string TAGS_ATTRIBUTE_NAME = "tags";
 
 using namespace std;
 
-inline bool isWare(const DOMNode& domNode) {
+inline bool is_ware(const DOMNode& dom_node) {
     // TODO - possibly doing too much work if this XMLCh* is cached/interned in some way?
-    const auto nodeName = xmlToStr(domNode.getNodeName());
-    return nodeName == WARE_NODE_NAME;
+    const auto node_name = xmlToStr(dom_node.getNodeName());
+    return node_name == WARE_NODE_NAME;
 }
 
-inline bool isRawMaterial(const DOMNode& domNode) {
-    if (! isWare(domNode))
+inline bool is_raw_material(const DOMNode& dom_node) {
+    if (! is_ware(dom_node))
         return false;
-    const auto tagsAttr = getNamedAttr(domNode, TAGS_ATTRIBUTE_NAME);
+    const auto tags_attr = getNamedAttr(dom_node, TAGS_ATTRIBUTE_NAME);
     const vector<string> required_tags = {"economy", "mineral"};
-    return tagsAttr ? attrContainsAll(*tagsAttr, required_tags) : false;
+    return tags_attr ? attr_contains_all(*tags_attr, required_tags) : false;
 }
 
-inline bool isRefinedProduct(const DOMNode& domNode) {
-    if (! isWare(domNode))
+inline bool is_refined_product(const DOMNode& dom_node) {
+    if (! is_ware(dom_node))
         return false;
-    const auto tagsAttr = getNamedAttr(domNode, TAGS_ATTRIBUTE_NAME);
+    const auto tags_attr = getNamedAttr(dom_node, TAGS_ATTRIBUTE_NAME);
     const vector<string> required_tags = {"economy", "container"};
-    return tagsAttr ? attrContainsAll(*tagsAttr, required_tags) : false;
+    return tags_attr ? attr_contains_all(*tags_attr, required_tags) : false;
 }
 
-inline StorageType toStorageType(const string& storageType) {
-    if (storageType == "liquid")
+inline StorageType to_storage_type(const string& storage_type) {
+    if (storage_type == "liquid")
         return STORAGE_TYPE_GAS; // TODO convert 'GAS' to 'LIQUID' then use string hacks for this
-    if (storageType == "solid")
+    if (storage_type == "solid")
         return STORAGE_TYPE_SOLID;
-    if (storageType == "container")
+    if (storage_type == "container")
         return STORAGE_TYPE_CONTAINER;
     return STORAGE_TYPE_UNSPECIFIED;
 }
 
-// TODO - memory leak?
-inline void toRawMaterial(const DOMNode& domNode, RawMaterial* material) {
-    material->set_id(getNamedAttrValue(domNode, "id"));
-    material->set_storage_type(toStorageType(getNamedAttrValue(domNode, "transport")));
-    material->set_volume(stoi(getNamedAttrValue(domNode, "volume")));
+inline void to_raw_material(const DOMNode& dom_node, RawMaterial* material) {
+    material->set_id(get_named_attr_value(dom_node, "id"));
+    material->set_storage_type(to_storage_type(get_named_attr_value(dom_node, "transport")));
+    material->set_volume(stoi(get_named_attr_value(dom_node, "volume")));
 }
 
-inline void toRefinedProduct(const DOMNode& domNode, RefinedProduct* product) {
-     product->set_id(getNamedAttrValue(domNode, "id"));
-     product->set_storage_type(toStorageType(getNamedAttrValue(domNode, "transport")));
-     product->set_volume(stoi(getNamedAttrValue(domNode, "volume")));
+inline void to_refined_product(const DOMNode& dom_node, RefinedProduct* product) {
+     product->set_id(get_named_attr_value(dom_node, "id"));
+     product->set_storage_type(to_storage_type(get_named_attr_value(dom_node, "transport")));
+     product->set_volume(stoi(get_named_attr_value(dom_node, "volume")));
      // Required wares need to be looked up after the extraction pass is complete
 }
 
-inline vector<string> getRequiredWareNames(DOMNode* wareNode) {
-    vector<string> requiredWareNames;
-    auto requiredWareNodes = getNamedNestedNodes({wareNode}, "production/primary/ware");
-    for (const auto& reqWareNode: requiredWareNodes) {
-        auto wareName = getNamedAttrValue(*reqWareNode, "ware");
-        requiredWareNames.push_back(wareName);
+inline vector<string> get_required_ware_names(DOMNode* ware_node) {
+    vector<string> required_ware_names;
+    auto required_ware_nodes = get_named_nested_nodes({ware_node}, "production/primary/ware");
+    for (const auto& req_ware_node: required_ware_nodes) {
+        auto ware_name = get_named_attr_value(*req_ware_node, "ware");
+        required_ware_names.push_back(ware_name);
     }
-    return requiredWareNames;
+    return required_ware_names;
 }
 
-inline unordered_map<string,EconomyWare> extractEconomyWares(const DOMElement* domElement) {
-    auto childNodes = getChildNodes(domElement);
+inline unordered_map<string,EconomyWare> extract_economy_wares(const DOMElement& dom_element) {
+    auto child_nodes = get_child_nodes(dom_element);
 
-    std::unordered_map<string, RawMaterial*> rawMaterials;
-    std::unordered_map<string, RefinedProduct*> refinedProducts;
-    std::unordered_map<string,DOMNode*> refinedProductNodes;
+    std::unordered_map<string, RawMaterial*> raw_materials;
+    std::unordered_map<string, RefinedProduct*> refined_products;
+    std::unordered_map<string,DOMNode*> refined_product_nodes;
 
-    for (auto childNode : childNodes["ware"]) {
-        if (isRawMaterial(*childNode)) {
-            auto rawMaterial = new RawMaterial(); // TODO - memory leak
-            toRawMaterial(*childNode, rawMaterial);
-            rawMaterials[rawMaterial->id()] = rawMaterial;
+    for (auto child_node : child_nodes["ware"]) {
+        if (is_raw_material(*child_node)) {
+            auto raw_material = new RawMaterial();
+            to_raw_material(*child_node, raw_material);
+            raw_materials[raw_material->id()] = raw_material;
         }
-        else if (isRefinedProduct(*childNode)) {
-            auto refinedProduct = new RefinedProduct();
-            toRefinedProduct(*childNode, refinedProduct);
-            auto id =refinedProduct->id();
-            refinedProducts[id] = refinedProduct;
+        else if (is_refined_product(*child_node)) {
+            auto refined_product = new RefinedProduct();
+            to_refined_product(*child_node, refined_product);
+            auto id =refined_product->id();
+            refined_products[id] = refined_product;
             // TODO - use ID instead of looking up attribute again
-            refinedProductNodes[id] = childNode;
+            refined_product_nodes[id] = child_node;
         }
     }
     // Now we can process the dependencies for refined products
     // production/primary/ware subNodes with "ware" attribute value
-    for (auto& [name, product_node] : refinedProductNodes) {
-        auto refined_product = refinedProducts[name];
-        auto reqWareNames = getRequiredWareNames(product_node);
-        for (const auto& reqWareName: reqWareNames) {
-            refined_product->add_required_ware_ids(reqWareName);
+    for (auto& [name, product_node] : refined_product_nodes) {
+        auto refined_product = refined_products[name];
+        auto req_ware_names = get_required_ware_names(product_node);
+        for (const auto& req_ware_name: req_ware_names) {
+            refined_product->add_required_ware_ids(req_ware_name);
         }
     }
 
-    std::string jsonString;
-    unordered_map<string,EconomyWare> economyWares;
-    for (auto kvPair : rawMaterials) {
-        EconomyWare economyWare;
-        auto val = kvPair.second;
-        economyWare.set_allocated_raw_material(val);
-        economyWares[kvPair.first] = economyWare;
-        google::protobuf::TextFormat::PrintToString(*val, &jsonString);
-        cout <<  jsonString << endl;
+    unordered_map<string,EconomyWare> economy_wares;
+    for (auto [name, raw_material] : raw_materials) {
+        EconomyWare economy_ware;
+        economy_ware.set_allocated_raw_material(raw_material);
+        economy_wares[name] = economy_ware;
     }
-    for (auto kvPair : refinedProducts) {
-        EconomyWare economyWare;
-        auto val = kvPair.second;
-        economyWare.set_allocated_refined_product(val);
-        economyWares[kvPair.first] = economyWare;
-        google::protobuf::TextFormat::PrintToString(*val, &jsonString);
-        cout <<  jsonString << endl;
+    for (auto [name, refined_product] : refined_products) {
+        EconomyWare economy_ware;
+        economy_ware.set_allocated_refined_product(refined_product);
+        economy_wares[name] = economy_ware;
     }
 
-    return economyWares;
+    return economy_wares;
 }
 
 #endif //LIB_WARES_UTIL_H

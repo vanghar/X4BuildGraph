@@ -31,7 +31,7 @@ inline string getAttrValue(const DOMNode& domNode) {
     return retval;
 }
 
-inline string getNamedAttrValue(const DOMNode& domNode, const string& name) {
+inline string get_named_attr_value(const DOMNode& domNode, const string& name) {
     const auto namedAttr = getNamedAttr(domNode, name);
     return getAttrValue(*namedAttr);
 }
@@ -47,7 +47,7 @@ inline vector<string> getDelimitedValues(const DOMNode& domNode, const string& s
 }
 
 // TODO - assumes that values are separated by space
-inline bool attrContainsAll(const DOMNode& domNode, const vector<string>& requiredValues) {
+inline bool attr_contains_all(const DOMNode& domNode, const vector<string>& requiredValues) {
     auto delimValues = getDelimitedValues(domNode, " ");
     auto uniqueValues = toHashSet(delimValues);
     for (const auto& val : requiredValues) {

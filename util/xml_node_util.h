@@ -20,17 +20,17 @@ inline string xmlToStr(const XMLCh* xmlStr) {
     return stdStr;
 }
 
-inline string getNodeName(const DOMNode* domNode) {
-    auto xmlName = domNode->getNodeName();
+inline string getNodeName(const DOMNode& domNode) {
+    auto xmlName = domNode.getNodeName();
     return xmlToStr(xmlName);
 }
 
-inline unordered_map<string,vector<DOMNode*>> getChildNodes(const DOMNode* domNode) {
+inline unordered_map<string,vector<DOMNode*>> get_child_nodes(const DOMNode& domNode) {
     unordered_map<string,vector<DOMNode*>> childNodes;
-    auto subNodes = domNode->getChildNodes();
+    auto subNodes = domNode.getChildNodes();
     for (int i=0; i<subNodes->getLength(); ++i) {
         auto subNode = subNodes->item(i);
-        auto nodeName = getNodeName(subNode);
+        auto nodeName = getNodeName(*subNode);
         childNodes[nodeName].push_back(subNode);
     }
     return childNodes;
@@ -39,7 +39,7 @@ inline unordered_map<string,vector<DOMNode*>> getChildNodes(const DOMNode* domNo
 inline vector<DOMNode*> getNamedChildNodes(const vector<DOMNode*>& domNodes, const string& childName) {
     vector<DOMNode*> namedNodes;
     for (auto domNode : domNodes) {
-        auto namedChildNodes = getChildNodes(domNode)[childName];
+        auto namedChildNodes = get_child_nodes(*domNode)[childName];
         namedNodes.insert(namedNodes.end(), namedChildNodes.begin(), namedChildNodes.end());
         return namedNodes;
     }
@@ -47,7 +47,7 @@ inline vector<DOMNode*> getNamedChildNodes(const vector<DOMNode*>& domNodes, con
 }
 
 // // Requires a '/' separated node path
-inline vector<DOMNode*> getNamedNestedNodes(vector<DOMNode*> domNodes, string nodePath) {
+inline vector<DOMNode*> get_named_nested_nodes(vector<DOMNode*> domNodes, string nodePath) {
     vector<string> pathParts;
     split(pathParts, nodePath, boost::is_any_of("/"));
     for (const auto& nodeName : pathParts) {

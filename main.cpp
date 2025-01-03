@@ -15,6 +15,8 @@
 #include <boost/graph/graphviz.hpp>
 #include <fstream>
 #include <format>
+
+#include "src/xml_parser.h"
 //
 using namespace xercesc;
 using namespace std;
@@ -41,85 +43,26 @@ using namespace std;
 // typedef adjacency_list<vecS, vecS, directedS> Graph;
 
 
-// TODO - move all this somewhere else
-std::unordered_map<string,EconomyWare> extractXmlData() {
-    try {
-        XMLPlatformUtils::Initialize();
-    }
-    catch (const XMLException& toCatch) {
-        auto message = XMLString::transcode(toCatch.getMessage());
-        std::cout << "Error during initialization! :\n"
-             << message << "\n";
-        XMLString::release(&message);
-        return std::unordered_map<string, EconomyWare>();
-    }
-
-    // TODO - build wrappers around this smart pointer stuff
-    auto xmlParser = new XercesDOMParser();
-    xmlParser->setValidationScheme(XercesDOMParser::Val_Always);
-    xmlParser->setDoNamespaces(true);    // optional
-
-    auto errHandler = new HandlerBase;
-    xmlParser->setErrorHandler(errHandler);
-
-    // FIXME - configure this separately, or at least allow the extract point to be specified
-
-    try {
-        auto xmlFile = "/mnt/d/Games/Steam/steamapps/common/X4 Foundations/unpacked/libraries/wares.xml";
-        xmlParser->parse(xmlFile);
-    }
-    catch (const XMLException& toCatch) {
-        auto message = XMLString::transcode(toCatch.getMessage());
-        std::cout << "Exception message is: \n"
-             << message << "\n";
-        XMLString::release(&message);
-        return std::unordered_map<string, EconomyWare>();
-    }
-    catch (const DOMException& toCatch) {
-        auto message = XMLString::transcode(toCatch.msg);
-        std::cout << "Exception message is: \n"
-             << message << "\n";
-        XMLString::release(&message);
-        return std::unordered_map<string, EconomyWare>();
-    }
-    catch (...) {
-        std::cout << "Unexpected Exception \n" ;
-        return std::unordered_map<string, EconomyWare>();
-    }
-
-    // TODO - use Arena for protobufs and clean up pointers
-    auto xmlDoc = xmlParser->getDocument();
-    auto rootElement = xmlDoc->getDocumentElement();
-    auto ecoWares = extractEconomyWares(rootElement);
-
-    delete errHandler;
-    delete xmlParser;
-
-    XMLPlatformUtils::Terminate();
-
-    return ecoWares;
+std::unordered_map<string,EconomyWare> get_eco_wares() {
+    auto xml_parser = XmlParser::create(
+            "/mnt/d/Games/Steam/steamapps/common/X4 Foundations/unpacked/libraries/wares.xml");
+    return extract_economy_wares(xml_parser->root_element());
 }
-
-
 
 /**
  * Fetches the dependency graph of raw materials and produced wares
  */
-void generateWaresGraph(std::unordered_map<string,EconomyWare> &ecoWares) {
-    // typedef pair<string,string> Edge;
-    // typedef string Vertex;
-
+void get_wares_graph(std::unordered_map<string,EconomyWare> &ecoWares) {
     typedef adjacency_list<vecS, vecS, directedS, property<boost::vertex_name_t, std::string>> Graph;
 
-    // TOOD - graph looks off
     std::unordered_map<string,unsigned long> vertices;
-     Graph g;//(ecoWares.size());
-     for (auto [eco_name, eco_ware] : ecoWares) {
+     Graph g;
+     for (const auto& [eco_name, eco_ware] : ecoWares) {
          auto v1 = add_vertex(eco_name, g);
          vertices[eco_name] = v1;
      }
 
-     for (auto [eco_name, eco_ware] : ecoWares) {
+     for (const auto& [eco_name, eco_ware] : ecoWares) {
          if (eco_ware.has_refined_product()) {
              auto refined_product = eco_ware.refined_product();
              for (const auto& req_name : refined_product.required_ware_ids()) {
@@ -133,8 +76,6 @@ void generateWaresGraph(std::unordered_map<string,EconomyWare> &ecoWares) {
          }
      }
      std::ofstream dot_file("graph.dot");
-//     ///auto label_writer = make_label_writer(get(vertex_name, g));
-// //    auto label_writer = make_label_writer(name);
      write_graphviz(dot_file, g, make_label_writer(get(vertex_name, g)));
 }
 
@@ -158,8 +99,9 @@ void generateModuleGraph() {
 // TIP To <b>Run</b> code, press <shortcut actionId="Run"/> or
 // click the <icon src="AllIcons.Actions.Execute"/> icon in the gutter.
 int main() {
-    auto data = extractXmlData();
-    generateWaresGraph(data);
+    auto data = get_eco_wares();
+    get_wares_graph(data);
+    XMLPlatformUtils::Terminate();
     return 0;
 }
 
