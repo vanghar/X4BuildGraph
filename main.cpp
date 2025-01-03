@@ -16,6 +16,7 @@
 #include <fstream>
 #include <format>
 
+#include "src/x4_wares_xml.h"
 #include "src/xml_parser.h"
 //
 using namespace xercesc;
@@ -44,9 +45,8 @@ using namespace std;
 
 
 std::unordered_map<string,EconomyWare> get_eco_wares() {
-    auto xml_parser = XmlParser::create(
-            "/mnt/d/Games/Steam/steamapps/common/X4 Foundations/unpacked/libraries/wares.xml");
-    return extract_economy_wares(xml_parser->root_element());
+    auto x4_wares = X4_WaresXml::create("/mnt/d/Games/Steam/steamapps/common/X4 Foundations/unpacked/libraries/wares.xml");
+    return x4_wares.extract_economy_wares();
 }
 
 /**

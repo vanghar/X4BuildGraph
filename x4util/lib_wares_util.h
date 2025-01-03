@@ -17,14 +17,14 @@ using namespace std;
 
 inline bool is_ware(const DOMNode& dom_node) {
     // TODO - possibly doing too much work if this XMLCh* is cached/interned in some way?
-    const auto node_name = xmlToStr(dom_node.getNodeName());
+    const auto node_name = xml_to_str(dom_node.getNodeName());
     return node_name == WARE_NODE_NAME;
 }
 
 inline bool is_raw_material(const DOMNode& dom_node) {
     if (! is_ware(dom_node))
         return false;
-    const auto tags_attr = getNamedAttr(dom_node, TAGS_ATTRIBUTE_NAME);
+    const auto tags_attr = get_named_attr(dom_node, TAGS_ATTRIBUTE_NAME);
     const vector<string> required_tags = {"economy", "mineral"};
     return tags_attr ? attr_contains_all(*tags_attr, required_tags) : false;
 }
@@ -32,7 +32,7 @@ inline bool is_raw_material(const DOMNode& dom_node) {
 inline bool is_refined_product(const DOMNode& dom_node) {
     if (! is_ware(dom_node))
         return false;
-    const auto tags_attr = getNamedAttr(dom_node, TAGS_ATTRIBUTE_NAME);
+    const auto tags_attr = get_named_attr(dom_node, TAGS_ATTRIBUTE_NAME);
     const vector<string> required_tags = {"economy", "container"};
     return tags_attr ? attr_contains_all(*tags_attr, required_tags) : false;
 }
@@ -71,48 +71,48 @@ inline vector<string> get_required_ware_names(DOMNode* ware_node) {
 }
 
 inline unordered_map<string,EconomyWare> extract_economy_wares(const DOMElement& dom_element) {
-    auto child_nodes = get_child_nodes(dom_element);
-
-    std::unordered_map<string, RawMaterial*> raw_materials;
-    std::unordered_map<string, RefinedProduct*> refined_products;
-    std::unordered_map<string,DOMNode*> refined_product_nodes;
-
-    for (auto child_node : child_nodes["ware"]) {
-        if (is_raw_material(*child_node)) {
-            auto raw_material = new RawMaterial();
-            to_raw_material(*child_node, raw_material);
-            raw_materials[raw_material->id()] = raw_material;
-        }
-        else if (is_refined_product(*child_node)) {
-            auto refined_product = new RefinedProduct();
-            to_refined_product(*child_node, refined_product);
-            auto id =refined_product->id();
-            refined_products[id] = refined_product;
-            // TODO - use ID instead of looking up attribute again
-            refined_product_nodes[id] = child_node;
-        }
-    }
-    // Now we can process the dependencies for refined products
-    // production/primary/ware subNodes with "ware" attribute value
-    for (auto& [name, product_node] : refined_product_nodes) {
-        auto refined_product = refined_products[name];
-        auto req_ware_names = get_required_ware_names(product_node);
-        for (const auto& req_ware_name: req_ware_names) {
-            refined_product->add_required_ware_ids(req_ware_name);
-        }
-    }
+    // auto child_nodes = get_child_nodes(dom_element);
+    //
+    // std::unordered_map<string, RawMaterial*> raw_materials;
+    // std::unordered_map<string, RefinedProduct*> refined_products;
+    // std::unordered_map<string,DOMNode*> refined_product_nodes;
+    //
+    // for (auto child_node : child_nodes["ware"]) {
+    //     if (is_raw_material(*child_node)) {
+    //         auto raw_material = new RawMaterial();
+    //         to_raw_material(*child_node, raw_material);
+    //         raw_materials[raw_material->id()] = raw_material;
+    //     }
+    //     else if (is_refined_product(*child_node)) {
+    //         auto refined_product = new RefinedProduct();
+    //         to_refined_product(*child_node, refined_product);
+    //         auto id =refined_product->id();
+    //         refined_products[id] = refined_product;
+    //         // TODO - use ID instead of looking up attribute again
+    //         refined_product_nodes[id] = child_node;
+    //     }
+    // }
+    // // Now we can process the dependencies for refined products
+    // // production/primary/ware subNodes with "ware" attribute value
+    // for (auto& [name, product_node] : refined_product_nodes) {
+    //     auto refined_product = refined_products[name];
+    //     auto req_ware_names = get_required_ware_names(product_node);
+    //     for (const auto& req_ware_name: req_ware_names) {
+    //         refined_product->add_required_ware_ids(req_ware_name);
+    //     }
+    // }
 
     unordered_map<string,EconomyWare> economy_wares;
-    for (auto [name, raw_material] : raw_materials) {
-        EconomyWare economy_ware;
-        economy_ware.set_allocated_raw_material(raw_material);
-        economy_wares[name] = economy_ware;
-    }
-    for (auto [name, refined_product] : refined_products) {
-        EconomyWare economy_ware;
-        economy_ware.set_allocated_refined_product(refined_product);
-        economy_wares[name] = economy_ware;
-    }
+    // for (auto [name, raw_material] : raw_materials) {
+    //     EconomyWare economy_ware;
+    //     economy_ware.set_allocated_raw_material(raw_material);
+    //     economy_wares[name] = economy_ware;
+    // }
+    // for (auto [name, refined_product] : refined_products) {
+    //     EconomyWare economy_ware;
+    //     economy_ware.set_allocated_refined_product(refined_product);
+    //     economy_wares[name] = economy_ware;
+    // }
 
     return economy_wares;
 }

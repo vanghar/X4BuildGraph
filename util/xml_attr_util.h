@@ -15,8 +15,7 @@ using namespace std;
 using namespace boost;
 
 
-// TODO - memory leak?
-inline DOMNode* getNamedAttr(const DOMNode& domNode, const string& name) {
+inline DOMNode* get_named_attr(const DOMNode& domNode, const string& name) {
     auto nodeAttrs = domNode.getAttributes();
     auto attrName = XMLString::transcode(name.c_str());
     auto namedItem = nodeAttrs->getNamedItem(attrName);
@@ -32,7 +31,7 @@ inline string getAttrValue(const DOMNode& domNode) {
 }
 
 inline string get_named_attr_value(const DOMNode& domNode, const string& name) {
-    const auto namedAttr = getNamedAttr(domNode, name);
+    const auto namedAttr = get_named_attr(domNode, name);
     return getAttrValue(*namedAttr);
 }
 

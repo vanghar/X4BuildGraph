@@ -15,6 +15,10 @@ add_executable(X4BuildGraph main.cpp
         x4util/lib_wares_util.h
         src/xml_parser.cpp
         src/xml_parser.h
+        src/x4_wares_xml.cpp
+        src/x4_wares_xml.h
+        src/x4_modules_xml.cpp
+        src/x4_modules_xml.h
 )
 
 #
