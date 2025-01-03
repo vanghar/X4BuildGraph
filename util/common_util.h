@@ -11,13 +11,13 @@
 using namespace std;
 
 template <typename T>
-std::unordered_set<T> toHashSet(vector<T> values) {
-    unordered_set<T> uniqueVals(values.begin(), values.end());
-    return uniqueVals;
+std::unordered_set<T> to_hash_set(vector<T> values) {
+    unordered_set<T> unique_vals(values.begin(), values.end());
+    return unique_vals;
 }
 
 template<typename K, typename V>
-bool containsKey(unordered_map<K,V> map, K key) {
+bool contains_key(unordered_map<K,V> map, K key) {
     return find(map.begin(), map.end(), key) != map.end();
 }
 

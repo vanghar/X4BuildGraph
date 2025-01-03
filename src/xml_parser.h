@@ -4,7 +4,6 @@
 
 #ifndef XML_PARSER_H
 #define XML_PARSER_H
-#include <iostream>
 #include <memory>
 #include <string>
 #include <xercesc/dom/DOMDocument.hpp>
@@ -24,6 +23,8 @@ public:
     XmlParser& operator=(XmlParser&&) noexcept { return *this; }
 
 private:
+    // This needs to be wrapped in unique_ptr because the XercesDOMParser copy constructor
+    // is deleted, so the value can't be stored as a reference.
     unique_ptr<XercesDOMParser> _xml_parser;
 
     static void xml_init();
@@ -31,7 +32,6 @@ private:
 
     XmlParser() = default;
     explicit XmlParser(unique_ptr<XercesDOMParser>&& xml_parser) : _xml_parser(std::move(xml_parser)) {}
-
 };
 
 #endif //XML_PARSER_H

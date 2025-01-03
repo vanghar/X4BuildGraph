@@ -13,7 +13,9 @@
 using namespace std;
 using namespace xercesc;
 
-// Helper methods
+/*******************************************************************************
+* Helper methods
+*******************************************************************************/
 StorageType to_storage_type(const string& storage_type) {
     if (storage_type == "liquid")
         return STORAGE_TYPE_GAS; // TODO convert 'GAS' to 'LIQUID' then use string hacks for this
@@ -47,7 +49,9 @@ vector<string> get_required_ware_names(xercesc_3_3::DOMNode* ware_node) {
     return required_ware_names;
 }
 
-// Class methods
+/*******************************************************************************
+* Class methods
+*******************************************************************************/
 X4_WaresXml X4_WaresXml::create(const string& file_path) {
     auto xml_parser = XmlParser::create(file_path);
     X4_WaresXml wares_xml(std::move(xml_parser));
@@ -55,7 +59,6 @@ X4_WaresXml X4_WaresXml::create(const string& file_path) {
 }
 
 bool X4_WaresXml::is_ware(const DOMNode& dom_node) {
-    // TODO - possibly doing too much work if this XMLCh* is cached/interned in some way?
     const auto node_name = xml_to_str(dom_node.getNodeName());
     return node_name == WARE_NODE_NAME;
 }
@@ -83,11 +86,11 @@ unordered_map<string,EconomyWare> X4_WaresXml::extract_economy_wares() const {
 unordered_map<string,EconomyWare> X4_WaresXml::_extract_economy_wares(DOMElement& dom_element) {
     auto child_nodes = get_child_nodes(dom_element);
 
-    // Protobuf types here will serve as inner messages so need to be
-    // stored as pointers.
+    // Protobuf types here will serve as inner messages in EconomyWare messages
+    // so need to be stored as pointers.
     // This is because the "set_allocated" methods used to assign
     // inner protobuf fields transfer ownership of, and subsequently
-    // free the original pointer. If pointer types are not used
+    // free, the original pointer. If pointer types are not used
     // you end up with double free errors.
     std::unordered_map<string, RawMaterial*> raw_materials;
     std::unordered_map<string, RefinedProduct*> refined_products;

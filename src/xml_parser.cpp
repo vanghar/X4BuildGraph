@@ -6,6 +6,9 @@
 #include <xercesc/framework/LocalFileInputSource.hpp>
 #include <xercesc/sax/HandlerBase.hpp>
 #include "../util/xml_node_util.h"
+#include <iostream>
+
+using namespace std;
 
 XmlParser XmlParser::create(const string& xml_file) {
     xml_init();
@@ -49,16 +52,16 @@ void XmlParser::parse_document(const string& file_path, XercesDOMParser& dom_par
     }
     catch (const XMLException& toCatch) {
         auto message = xml_to_str(toCatch.getMessage());
-        std::cout << "XMLException parsing file: '" << file_path << "' : " << message << endl;
+        cout << "XMLException parsing file: '" << file_path << "' : " << message << endl;
         throw;
     }
     catch (const DOMException& toCatch) {
         auto message = xml_to_str(toCatch.msg);
-        std::cout << "DOMException parsing file: '" << file_path << "' : " << message << endl;
+        cout << "DOMException parsing file: '" << file_path << "' : " << message << endl;
         throw;
     }
     catch (...) {
-        std::cout << "Exception parsing file: '" << file_path << "'" << endl;
+        cout << "Exception parsing file: '" << file_path << "'" << endl;
         throw;
     }
 

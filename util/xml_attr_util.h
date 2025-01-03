@@ -9,48 +9,45 @@
 #include <boost/algorithm/string.hpp>
 #include <ranges>
 #include "common_util.h"
+#include "xml_node_util.h"
 
 using namespace xercesc;
 using namespace std;
 using namespace boost;
 
 
-inline DOMNode* get_named_attr(const DOMNode& domNode, const string& name) {
-    auto nodeAttrs = domNode.getAttributes();
-    auto attrName = XMLString::transcode(name.c_str());
-    auto namedItem = nodeAttrs->getNamedItem(attrName);
-    XMLString::release(&attrName);
-    return namedItem;
+inline DOMNode* get_named_attr(const DOMNode& dom_node, const string& name) {
+    auto node_attrs = dom_node.getAttributes();
+    auto attr_name = XMLString::transcode(name.c_str());
+    auto named_item = node_attrs->getNamedItem(attr_name);
+    XMLString::release(&attr_name);
+    return named_item;
 }
 
-inline string getAttrValue(const DOMNode& domNode) {
-    auto valueStr = XMLString::transcode(domNode.getNodeValue());
-    std::string retval(valueStr);
-    XMLString::release(&valueStr);
-    return retval;
+inline string get_attr_value(const DOMNode& dom_node) {
+    auto node_value = dom_node.getNodeValue();
+    return xml_to_str(node_value);
 }
 
 inline string get_named_attr_value(const DOMNode& domNode, const string& name) {
     const auto namedAttr = get_named_attr(domNode, name);
-    return getAttrValue(*namedAttr);
+    return get_attr_value(*namedAttr);
 }
 
-inline vector<string> getDelimitedValues(const DOMNode& domNode, const string& separator) {
-    auto valueStr = XMLString::transcode(domNode.getNodeValue());
+inline vector<string> get_delimited_values(const DOMNode& dom_node, const string& separator) {
+    auto node_value = dom_node.getNodeValue();
+    auto value_str = xml_to_str(node_value);
     vector<string> attrValues;
-    split(attrValues, valueStr, boost::is_any_of(separator));
-    XMLString::release(&valueStr);
+    split(attrValues, value_str, boost::is_any_of(separator));
     return attrValues;
-    // unordered_set<string> uniqueVals(attrValues.begin(), attrValues.end());
-    // return uniqueVals;
 }
 
 // TODO - assumes that values are separated by space
-inline bool attr_contains_all(const DOMNode& domNode, const vector<string>& requiredValues) {
-    auto delimValues = getDelimitedValues(domNode, " ");
-    auto uniqueValues = toHashSet(delimValues);
-    for (const auto& val : requiredValues) {
-        if (ranges::find(uniqueValues, val) == uniqueValues.end())
+inline bool attr_contains_all(const DOMNode& dom_node, const vector<string>& required_values) {
+    auto delim_values = get_delimited_values(dom_node, " ");
+    auto unique_values = to_hash_set(delim_values);
+    for (const auto& val : required_values) {
+        if (ranges::find(unique_values, val) == unique_values.end())
             return false;
     }
     return true;
