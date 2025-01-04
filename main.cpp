@@ -26,37 +26,37 @@ using namespace boost;
 // TODO - read file locations from command line
 
 
-
-std::unordered_map<string, EconomyWare> get_eco_wares() {
-    auto x4_wares = LibWaresXml::create(
+LibWaresXml get_eco_wares() {
+    return LibWaresXml::create(
         "/mnt/d/Games/Steam/steamapps/common/X4 Foundations/unpacked/libraries/wares.xml");
-    return x4_wares.extract_economy_wares();
 }
 
 /**
  * Fetches the dependency graph of raw materials and produced wares
  */
-void get_wares_graph(std::unordered_map<string, EconomyWare> &ecoWares) {
+void get_wares_graph(LibWaresXml &lib_wares_xml) {
     typedef adjacency_list<vecS, vecS, directedS, property<boost::vertex_name_t, std::string> > Graph;
 
     std::unordered_map<string, unsigned long> vertices;
     Graph g;
-    for (const auto &[eco_name, eco_ware]: ecoWares) {
-        auto v1 = add_vertex(eco_name, g);
-        vertices[eco_name] = v1;
+    // Add raw materials first
+    for (const auto &[material_name, raw_material]: lib_wares_xml.get_raw_materials()) {
+        auto v1 = add_vertex(material_name, g);
+        vertices[material_name] = v1;
+    }
+    for (const auto &[product_name, refined_product]: lib_wares_xml.get_refined_products()) {
+        auto v1 = add_vertex(product_name, g);
+        vertices[product_name] = v1;
     }
 
-    for (const auto &[eco_name, eco_ware]: ecoWares) {
-        if (eco_ware.has_refined_product()) {
-            auto refined_product = eco_ware.refined_product();
-            for (const auto &req_name: refined_product.required_ware_ids()) {
-                // auto reqWare = ecoWares[reqName];
-                auto source_vertex = vertices[req_name];
-                auto target_vertex = vertices[eco_name];
-                auto log_msg = format("{}({}) -> {}({})", source_vertex, req_name, target_vertex, eco_name);
-                cout << log_msg << endl;
-                add_edge(source_vertex, target_vertex, g);
-            }
+    for (const auto &[product_name, refined_product]: lib_wares_xml.get_refined_products()) {
+        for (const auto &req_ware: refined_product.required_wares()) {
+            auto req_name = req_ware.required_ware_id();
+            auto source_vertex = vertices[req_name];
+            auto target_vertex = vertices[product_name];
+            auto log_msg = format("{}({}) -> {}({})", source_vertex, req_name, target_vertex, product_name);
+            cout << log_msg << endl;
+            add_edge(source_vertex, target_vertex, g);
         }
     }
     std::ofstream dot_file("graph.dot");

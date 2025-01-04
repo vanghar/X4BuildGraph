@@ -17,6 +17,6 @@ string xml_to_str(const XMLCh* xml_str);
 string get_node_name(const DOMNode& dom_node);
 unordered_map<string,vector<DOMNode*>> get_child_nodes(const DOMNode& dom_node);
 vector<DOMNode*> get_named_child_nodes(const vector<DOMNode*>& dom_nodes, const string& child_name);
-vector<DOMNode*> get_named_nested_nodes(vector<DOMNode*> dom_nodes, string node_path);
+vector<DOMNode*> get_named_nested_nodes(vector<DOMNode*> dom_nodes, const string& node_path);
 
 #endif //XML_NODE_UTIL_H

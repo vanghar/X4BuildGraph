@@ -21,11 +21,24 @@ bool is_storage_module(const DOMNode& dom_node) {
 
 ProductionModule to_production_module(const DOMNode& dom_node) {
     auto prod_module = ProductionModule();
-    prod_module.set_id(get_named_attr_value(dom_node, "id"));
+    prod_module.set_module_id(get_named_attr_value(dom_node, "id"));
     auto category_node = get_child_nodes(dom_node)["category"][0];
     auto refined_product_name = get_named_attr_value(*category_node, "ware");
     prod_module.set_product_name(refined_product_name);
     return prod_module;
+}
+
+// TODO - determine where the config for gas and solid storage is
+StorageModule to_storage_module(const DOMNode& dom_node) {
+    auto storage_module = StorageModule();
+    storage_module.set_module_id(get_named_attr_value(dom_node, "id"));
+    return storage_module;
+}
+
+DockModule to_dock_module(const DOMNode& dom_node) {
+    auto dock_module = DockModule();
+    dock_module.set_module_id(get_named_attr_value(dom_node, "id"));
+    return dock_module;
 }
 
 unordered_map<string,ProductionModule> extract_production_modules_internal(const DOMElement& dom_element) {
@@ -42,7 +55,7 @@ unordered_map<string,ProductionModule> extract_production_modules_internal(const
     for (auto child_node : child_nodes["module"]) {
         if (is_production_module(*child_node)) {
             auto prod_module = to_production_module(*child_node);
-            production_modules[prod_module.id()] = prod_module;
+            production_modules[prod_module.module_id()] = prod_module;
         }
     }
 

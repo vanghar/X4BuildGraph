@@ -28,9 +28,9 @@ unordered_map<string,vector<DOMNode*>> get_child_nodes(const DOMNode& dom_node) 
     return child_nodes;
 }
 
-vector<DOMNode*> get_named_child_nodes(const vector<DOMNode*>& dom_nodes, const string& child_name) {
+vector<DOMNode*> get_named_child_nodes(vector<DOMNode*>& dom_nodes, const string& child_name) {
     vector<DOMNode*> named_nodes;
-    for (auto dom_node : dom_nodes) {
+    for (const auto dom_node : dom_nodes) {
         auto named_child_nodes = get_child_nodes(*dom_node)[child_name];
         named_nodes.insert(named_nodes.end(), named_child_nodes.begin(), named_child_nodes.end());
         return named_nodes;
@@ -39,7 +39,7 @@ vector<DOMNode*> get_named_child_nodes(const vector<DOMNode*>& dom_nodes, const 
 }
 
 // // Requires a '/' separated node path
-vector<DOMNode*> get_named_nested_nodes(vector<DOMNode*> dom_nodes, string node_path) {
+vector<DOMNode*> get_named_nested_nodes(vector<DOMNode*> dom_nodes, const string& node_path) {
 	auto path_parts = split_delimited(node_path, "/");
     for (const auto& node_name : path_parts) {
         dom_nodes = get_named_child_nodes(dom_nodes, node_name);

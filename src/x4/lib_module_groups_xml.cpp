@@ -14,7 +14,7 @@
 *******************************************************************************/
 GenericModule to_generic_module(const DOMNode& group_node) {
     GenericModule generic_module;
-    generic_module.set_id(get_named_attr_value(group_node, "name"));
+    generic_module.set_module_id(get_named_attr_value(group_node, "name"));
     const auto select_node = get_child_nodes(group_node)["select"][0];
     auto macro_name = get_named_attr_value(*select_node, "macro");
     generic_module.set_macro_name(macro_name);
@@ -26,9 +26,8 @@ unordered_map<string,GenericModule> extract_generic_modules_internal(const DOMEl
     std::unordered_map<string, GenericModule> generic_modules;
     for (auto child_node : child_nodes["group"]) {
         auto generic_module = to_generic_module(*child_node);
-        generic_modules[generic_module.id()] = generic_module;
+        generic_modules[generic_module.module_id()] = generic_module;
     }
-
     return generic_modules;
 }
 

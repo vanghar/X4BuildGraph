@@ -15,13 +15,24 @@ using namespace xercesc;
 
 class LibWaresXml {
 public:
-    static LibWaresXml create(const string& file_path);
-    [[nodiscard]] std::unordered_map<string,EconomyWare> extract_economy_wares() const;
+    static LibWaresXml create(const string &file_path);
+
+    unordered_map<string, RefinedProduct> get_refined_products();
+
+    unordered_map<string, RawMaterial> get_raw_materials();
+
+    unordered_map<string, GenericModule> get_generic_modules();
 
 private:
-    XmlParser _xml_parser;
-    explicit LibWaresXml(XmlParser&& xml_parser);
-};
+    LibWaresXml();
 
+    void populate_collections(const DOMElement &dom_element);
+
+    vector<RequiredWare> get_required_wares(DOMNode &product_node);
+
+    unordered_map<string, RefinedProduct> refined_products;
+    unordered_map<string, RawMaterial> raw_materials;
+    unordered_map<string, GenericModule> generic_modules;
+};
 
 #endif //LIB_WARES_XML_H
