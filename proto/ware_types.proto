@@ -63,6 +63,11 @@ message ProductionModule {
   // TODO - add RefinedProduct field
 }
 
+message GenericModule {
+  string id = 1;
+  string macro_name = 2;
+}
+
 // Docks and Piers
 // $USER/constructionplans.xml:entry.macro:pier_arg_harbor_03_macro -> (class=pier)
 //############## -> wares.xml:'component ref'="pier_arg_harbor_03_macro" <- 'ware id':module_arg_pier_l_03 ->

@@ -18,10 +18,12 @@ add_executable(X4BuildGraph main.cpp
         gen/ware_types.pb.h
         gen/ware_types.pb.cc
 
-        src/x4_wares_xml.cpp
-        src/x4_wares_xml.h
-        src/x4_modules_xml.cpp
-        src/x4_modules_xml.h
+        src/x4/lib_wares_xml.cpp
+        src/x4/lib_wares_xml.h
+        src/x4/lib_modules_xml.cpp
+        src/x4/lib_modules_xml.h
+        src/x4/lib_module_groups_xml.cpp
+        src/x4/lib_module_groups_xml.h
 )
 
 #
