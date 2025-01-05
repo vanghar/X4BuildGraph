@@ -30,8 +30,8 @@ template<typename T, typename K>
 auto get_optional(T&& map, K&& key)
 {
     auto it = map.find(std::forward<K>(key));
-    if (it == map.end()) return optional<typename std::decay<T>::type::mapped_type>{};
-    return optional<typename std::decay<T>::type::mapped_type>{it->second};
+    if (it == map.end()) return optional<typename std::decay_t<T>::mapped_type>{};
+    return optional<typename std::decay_t<T>::mapped_type>{it->second};
 }
 
 inline vector<string> split_delimited(const string& raw_value, const string& separator) {

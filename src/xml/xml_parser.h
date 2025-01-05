@@ -14,24 +14,27 @@ using namespace xercesc;
 // This could be modified to include a reset method to allow the dom parser to be reset and reused
 class XmlParser {
 public:
-    static XmlParser create(const string& file_path);
-    [[nodiscard]] DOMElement& root_element() const;
+    /**
+     * Creates an initialized XmlParser that can be used to create XML document
+     * trees using a wrapped XercesDOMParser.
+     */
+    static XmlParser create();
 
-    // TODO - move to cpp implementation
-    XmlParser(XmlParser&& other) noexcept : _xml_parser(std::move(other._xml_parser)) {}
-    XmlParser& operator=(XmlParser&&) noexcept { return *this; }
+    /**
+     * Loads the document tree for the given XML file.
+     * @param file_path - full path to XML file to be loaded.
+     * @return DOMNode of document tree root.
+     */
+    [[nodiscard]] DOMNode& load_file(const string& file_path) const;
 
+    XmlParser(XmlParser&& other) noexcept;
+    XmlParser& operator=(XmlParser&&) noexcept;
 private:
-    // This needs to be wrapped in unique_ptr because the XercesDOMParser copy constructor
-    // is deleted, so the value can't be stored as a reference.
+    // Wrapped in unique_ptr so that it will be released when XmlParser goes out of scope
     unique_ptr<XercesDOMParser> _xml_parser;
 
-    static void xml_init();
-    static void parse_document(const string& file_path, XercesDOMParser& dom_parser);
-
     XmlParser() = default;
-    // TODO - move to cpp implementation
-    explicit XmlParser(unique_ptr<XercesDOMParser>&& xml_parser) : _xml_parser(std::move(xml_parser)) {}
+    explicit XmlParser(unique_ptr<XercesDOMParser>&& xml_parser);
 };
 
 #endif //XML_PARSER_H

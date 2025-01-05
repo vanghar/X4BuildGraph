@@ -15,15 +15,19 @@ add_executable(X4BuildGraph main.cpp
         src/xml/xml_parser.h
         src/xml/xml_parser.cpp
 
-        gen/ware_types.pb.h
-        gen/ware_types.pb.cc
+        gen/x4_types.pb.h
+        gen/x4_types.pb.cc
 
-        src/x4/lib_wares_xml.cpp
-        src/x4/lib_wares_xml.h
         src/x4/lib_modules_xml.cpp
         src/x4/lib_modules_xml.h
         src/x4/lib_module_groups_xml.cpp
         src/x4/lib_module_groups_xml.h
+        src/x4/library_wares.cpp
+        src/x4/library_wares.h
+        src/x4/assets_structures.cpp
+        src/x4/assets_structures.h
+        src/x4/enum_helper.cpp
+        src/x4/enum_helper.h
 )
 
 #

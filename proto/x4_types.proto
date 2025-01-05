@@ -1,0 +1,127 @@
+syntax="proto3";
+
+enum StorageType {
+  STORAGE_TYPE_UNSPECIFIED = 0;
+  STORAGE_TYPE_LIQUID = 1;
+  STORAGE_TYPE_SOLID = 2;
+  STORAGE_TYPE_CONTAINER = 10;
+  // maybe more?
+}
+
+enum WareType {
+  WARE_TYPE_UNSPECIFIED = 0;
+  WARE_TYPE_RAW_MATERIAL = 1;
+  WARE_TYPE_REFINED_PRODUCT = 2;
+  WARE_TYPE_MODULE = 3;
+}
+
+// -----------------------------------------------------------------------------
+// Ware types
+// These are read from library/wares.xml
+// -----------------------------------------------------------------------------
+
+// wares.xml:<ware id="hydrogen" transport="liquid" volume="6" tags="economy minable">
+// wares.xml:<ware id="ore" transport="solid" volume="10" tags="economy minable">
+message RawMaterial {
+  string material_id = 1;
+  StorageType storage_type = 2;
+  uint32 volume = 3;
+}
+
+// wares.xml: <ware id="hullparts" group="hightech" transport="container" volume="12" tags="container economy">
+// wares.xml: <ware id="plasmaconductors" group="hightech" transport="container" volume="32" tags="container economy">
+message RefinedProduct {
+  string product_id = 1;
+  StorageType storage_type = 2;
+  uint32 volume = 3;
+  repeated RequiredWare required_wares = 4;
+}
+
+message RequiredWare {
+  string required_ware_id = 1;
+  WareType ware_type = 2;
+  uint32 amount = 3;
+}
+
+// -----------------------------------------------------------------------------
+// Module types
+// These are read from assets/structures/production|storage|dock/macros/
+// -----------------------------------------------------------------------------
+message GenericModule {
+  string module_id = 1;
+  string macro_name = 2;
+}
+
+message StorageModule {
+  string module_id = 1;
+  string macro_name = 2;
+  StorageType storage_type = 3;
+  uint32 storage_capacity = 4;
+}
+
+// prod_gen_hullparts_macro
+//############## -> wares.xml:ware_id=module_gen_prod_hullparts_01
+// -> assets/structures/production/macros/prod_gen_hullparts_macro.xml:'production wares'=hullparts
+// There is more info
+message ProductionModule {
+  // This is the ID that appears in module_groups.xml and modules.xml
+  // eg. prod_gen_antimattercells
+  string module_id = 1;
+  // This is the ID that appears in constructionplans.xml
+  // eg. prod_gen_antimattercells_macro
+  string macro_name = 2;
+  // This is the ID that appears in wares.xml
+  // eg. module_gen_prod_antimattercells_01
+  string wares_xml_id = 3;
+  // This is the name of the ware that is produced by this factory type
+  // eg. antimattercells
+  string product_name = 4;
+
+  uint32 workforce = 5;
+
+  // Information about what factory types are required to produce this module are derived from the wares graph
+  // This contains the details of what's needed to make it, so can be used to build
+  // the dependency graph
+//  RefinedProduct refined_product = 5;
+}
+
+// Taken from module_groups.xml:
+//    <group name="prod_gen_antimattercells"> <-- ** ID/GROUP **
+//      <select macro="prod_gen_antimattercells_macro" /> <-- ** MACRO **
+//    </group>
+
+// Taken from modules.xml:
+//    <module id="prod_gen_antimattercells" group="prod_gen_antimattercells"> <-- ** ID/GROUP **
+// What's made in this factory:
+//    <category ware="antimattercells" tags="[production, module]" race="[argon, paranid, split, teladi]" faction="[argon, paranid, teladi, antigone, holyorder, trinity, buccaneers, ministry, hatikvah, alliance, scaleplate]" />
+
+// Taken from wares.xml:
+//    <ware id="module_gen_prod_antimattercells_01" name="{20104,10301}" description="{20104,10302}" transport="container" volume="1" tags="module">
+//^^ FACTORY/MODULE ID ^^ ^^ CONTAINER TYPE ^^
+//
+//    <component ref="prod_gen_antimattercells_macro" /> <-- ** MACRO **
+
+
+// Docks and Piers
+// $USER/constructionplans.xml:entry.macro:pier_arg_harbor_03_macro -> (class=pier)
+//############## -> wares.xml:'component ref'="pier_arg_harbor_03_macro" <- 'ware id':module_arg_pier_l_03 ->
+// -> assets/structures/dock/macros/pier_arg_harbor_03_macro.xml (class=pier) vs (class=dockarea)
+enum DockModuleType {
+  DOCK_MODULE_TYPE_UNSPECIFIED = 0;
+  DOCK_MODULE_TYPE_PIER = 1; // class=pier
+  DOCK_MODULE_TYPE_DOCK = 2; // class=dockarea
+}
+
+message DockModule {
+  // This is the ID that appears in module_groups.xml and modules.xml
+  // eg. dockarea_arg_s_ship_02
+  string module_id = 1;
+  // This is the ID that appears in constructionplans.xml
+  // eg. dockarea_arg_s_ship_02_macro
+  string macro_name = 2;
+  // The type of the dock (pier or dockarea).
+  DockModuleType dock_type = 3;
+}
+
+// HabitatModule
+// DefenceModule

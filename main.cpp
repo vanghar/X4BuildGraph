@@ -12,7 +12,8 @@
 #include <fstream>
 #include <format>
 
-#include "src/x4/lib_wares_xml.h"
+#include "src/x4/assets_structures.h"
+#include "src/x4/library_wares.h"
 #include "src/xml/xml_parser.h"
 
 using namespace xercesc;
@@ -26,30 +27,33 @@ using namespace boost;
 // TODO - read file locations from command line
 
 
-LibWaresXml get_eco_wares() {
-    return LibWaresXml::create(
-        "/mnt/d/Games/Steam/steamapps/common/X4 Foundations/unpacked/libraries/wares.xml");
+LibraryWares get_wares(const string& unpack_root_path) {
+    return LibraryWares::create(unpack_root_path);
+}
+
+AssetsStructures get_modules(const string& unpack_root_path) {
+    return AssetsStructures::create(unpack_root_path);
 }
 
 /**
  * Fetches the dependency graph of raw materials and produced wares
  */
-void get_wares_graph(LibWaresXml &lib_wares_xml) {
+void get_wares_graph(LibraryWares &library_wares) {
     typedef adjacency_list<vecS, vecS, directedS, property<boost::vertex_name_t, std::string> > Graph;
 
     std::unordered_map<string, unsigned long> vertices;
     Graph g;
     // Add raw materials first
-    for (const auto &[material_name, raw_material]: lib_wares_xml.get_raw_materials()) {
+    for (const auto &[material_name, raw_material]: library_wares.get_raw_materials()) {
         auto v1 = add_vertex(material_name, g);
         vertices[material_name] = v1;
     }
-    for (const auto &[product_name, refined_product]: lib_wares_xml.get_refined_products()) {
+    for (const auto &[product_name, refined_product]: library_wares.get_refined_products()) {
         auto v1 = add_vertex(product_name, g);
         vertices[product_name] = v1;
     }
 
-    for (const auto &[product_name, refined_product]: lib_wares_xml.get_refined_products()) {
+    for (const auto &[product_name, refined_product]: library_wares.get_refined_products()) {
         for (const auto &req_ware: refined_product.required_wares()) {
             auto req_name = req_ware.required_ware_id();
             auto source_vertex = vertices[req_name];
@@ -83,8 +87,11 @@ void generateModuleGraph() {
 // TIP To <b>Run</b> code, press <shortcut actionId="Run"/> or
 // click the <icon src="AllIcons.Actions.Execute"/> icon in the gutter.
 int main() {
-    auto data = get_eco_wares();
-    get_wares_graph(data);
+    // TODO - get from command line
+    const auto& unpack_root_path = "/mnt/d/Games/Steam/steamapps/common/X4 Foundations/unpacked";
+    auto wares_data = get_wares(unpack_root_path);
+    auto modules_data = get_modules(unpack_root_path);
+    get_wares_graph(wares_data);
     XMLPlatformUtils::Terminate();
     return 0;
 }
