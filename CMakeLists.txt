@@ -18,10 +18,6 @@ add_executable(X4BuildGraph main.cpp
         gen/x4_types.pb.h
         gen/x4_types.pb.cc
 
-        src/x4/lib_modules_xml.cpp
-        src/x4/lib_modules_xml.h
-        src/x4/lib_module_groups_xml.cpp
-        src/x4/lib_module_groups_xml.h
         src/x4/library_wares.cpp
         src/x4/library_wares.h
         src/x4/assets_structures.cpp

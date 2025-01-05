@@ -1,11 +1,8 @@
 #include <iostream>
-#include <optional>
 #include <ranges>
 #include <unordered_map>
 
 #include <xercesc/dom/DOM.hpp>
-#include <xercesc/sax/HandlerBase.hpp>
-#include <xercesc/util/XMLString.hpp>
 #include <xercesc/util/PlatformUtils.hpp>
 #include <boost/graph/adjacency_list.hpp>
 #include <boost/graph/graphviz.hpp>
@@ -14,13 +11,12 @@
 
 #include "src/x4/assets_structures.h"
 #include "src/x4/library_wares.h"
-#include "src/xml/xml_parser.h"
+// #include <boost/graph/graph_traits.hpp>
+// #include <boost/graph/topological_sort.hpp>
 
 using namespace xercesc;
 using namespace std;
 using namespace boost;
-#include <boost/graph/graph_traits.hpp>
-
 
 // const google::protobuf::Arena ARENA;
 
@@ -35,20 +31,22 @@ AssetsStructures get_modules(const string& unpack_root_path) {
     return AssetsStructures::create(unpack_root_path);
 }
 
+typedef adjacency_list<vecS, vecS, directedS, property<boost::vertex_name_t, std::string> > Graph;
+
+
 /**
  * Fetches the dependency graph of raw materials and produced wares
  */
-void get_wares_graph(LibraryWares &library_wares) {
-    typedef adjacency_list<vecS, vecS, directedS, property<boost::vertex_name_t, std::string> > Graph;
+Graph get_wares_graph(LibraryWares &library_wares) {
 
     std::unordered_map<string, unsigned long> vertices;
     Graph g;
     // Add raw materials first
-    for (const auto &[material_name, raw_material]: library_wares.get_raw_materials()) {
+    for (const auto &material_name: library_wares.get_raw_materials() | views::keys) {
         auto v1 = add_vertex(material_name, g);
         vertices[material_name] = v1;
     }
-    for (const auto &[product_name, refined_product]: library_wares.get_refined_products()) {
+    for (const auto &product_name: library_wares.get_refined_products() | views::keys) {
         auto v1 = add_vertex(product_name, g);
         vertices[product_name] = v1;
     }
@@ -63,7 +61,59 @@ void get_wares_graph(LibraryWares &library_wares) {
             add_edge(source_vertex, target_vertex, g);
         }
     }
-    std::ofstream dot_file("graph.dot");
+    std::ofstream dot_file("wares_graph.dot");
+    write_graphviz(dot_file, g, make_label_writer(get(vertex_name, g)));
+    return g;
+}
+
+void get_structures_graph(AssetsStructures& assets_structures, LibraryWares& library_wares) {
+    std::unordered_map<string, unsigned long> vertices;
+    Graph g;
+
+
+    //
+    //
+    //
+    // // Add raw materials first
+    // for (const auto &material_name: library_wares.get_raw_materials() | views::keys) {
+    //     auto v1 = add_vertex(material_name, g);
+    //     vertices[material_name] = v1;
+    // }
+    // TODO - this is more useful keyed by macro name
+    // This contains a mapping of produced ware to N vertices for modules that produce that ware
+    std::unordered_map<string, vector<unsigned long>> wares_to_module_vertices;
+    for (const auto &[module_name, production_module]: assets_structures.get_production_modules()) {
+        auto v1 = add_vertex(module_name, g);
+        vertices[module_name] = v1;
+        wares_to_module_vertices[production_module.product_name()].push_back(v1);
+    }
+
+    // // Now perform a topological sort on the wares graph
+    // typedef boost::graph_traits<Graph>::vertex_descriptor Vertex;
+    // vector<Vertex> wares_vertex_list;
+    // topological_sort(wares_graph, wares_vertex_list);
+    //
+    // for (const auto wares_vertex : wares_vertex_list) {
+    //     auto wares_vertex_name = get(vertex_name, g, wares_vertex);
+    //
+    // }
+
+    for (const auto &[product_name, refined_product]: library_wares.get_refined_products()) {
+        auto consumer_vertices = wares_to_module_vertices[product_name];
+        for (const auto &req_ware: refined_product.required_wares()) {
+            auto req_name = req_ware.required_ware_id();
+            auto producer_vertices = wares_to_module_vertices[req_name];
+            for (const auto target_vertex : consumer_vertices) {
+                for (const auto source_vertex : producer_vertices) {
+                    auto log_msg = format("{}({}) -> {}({})", source_vertex, req_name, target_vertex, product_name);
+                    cout << log_msg << endl;
+                    add_edge(source_vertex, target_vertex, g);
+                }
+            }
+        }
+    }
+
+    std::ofstream dot_file("modules_graph.dot");
     write_graphviz(dot_file, g, make_label_writer(get(vertex_name, g)));
 }
 
@@ -91,7 +141,8 @@ int main() {
     const auto& unpack_root_path = "/mnt/d/Games/Steam/steamapps/common/X4 Foundations/unpacked";
     auto wares_data = get_wares(unpack_root_path);
     auto modules_data = get_modules(unpack_root_path);
-    get_wares_graph(wares_data);
+    auto wares_graph = get_wares_graph(wares_data);
+    get_structures_graph(modules_data, wares_data);
     XMLPlatformUtils::Terminate();
     return 0;
 }

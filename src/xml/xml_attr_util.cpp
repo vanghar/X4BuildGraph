@@ -39,12 +39,14 @@ bool value_contains_all(const string& attr_value, const vector<string>& required
     return true;
 }
 
+// TODO - support for multi space separators
 // Assumes strings in the format "val1 val2"
 bool string_attr_contains_all(const DOMNode& dom_node, const vector<string>& required_values) {
     const auto attr_value = get_attr_value(dom_node);
     return value_contains_all(attr_value, required_values, " ");
 }
 
+// TODO - better support for separator with or without spaces
 // Assumings string in the format "[val1, val2]"
 bool array_attr_contains_all(const DOMNode& dom_node, const vector<string>& required_values) {
     const auto attr_value = get_attr_value(dom_node);
