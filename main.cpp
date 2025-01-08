@@ -10,7 +10,7 @@
 #include "src/x4/assets_structures.h"
 #include "src/x4/library_wares.h"
 // #include <boost/graph/graph_traits.hpp>
-// #include <boost/graph/topological_sort.hpp>
+#include <boost/graph/topological_sort.hpp>
 
 #include "src/x4/construction_plans.h"
 
@@ -69,7 +69,6 @@ vector<string> get_module_order(AssetsStructures& assets_structures, LibraryWare
     std::unordered_map<string, unsigned long> vertices;
     Graph g;
 
-
     //
     //
     //
@@ -82,20 +81,11 @@ vector<string> get_module_order(AssetsStructures& assets_structures, LibraryWare
     // This contains a mapping of produced ware to N vertices for modules that produce that ware
     std::unordered_map<string, vector<unsigned long>> wares_to_module_vertices;
     for (const auto &[module_name, production_module]: assets_structures.get_production_modules()) {
-        auto v1 = add_vertex(module_name, g);
+        const auto& macro_name = production_module.macro_name();
+        auto v1 = add_vertex(macro_name, g);
         vertices[module_name] = v1;
         wares_to_module_vertices[production_module.product_name()].push_back(v1);
     }
-
-    // // Now perform a topological sort on the wares graph
-    // typedef boost::graph_traits<Graph>::vertex_descriptor Vertex;
-    // vector<Vertex> wares_vertex_list;
-    // topological_sort(wares_graph, wares_vertex_list);
-    //
-    // for (const auto wares_vertex : wares_vertex_list) {
-    //     auto wares_vertex_name = get(vertex_name, g, wares_vertex);
-    //
-    // }
 
     for (const auto &[product_name, refined_product]: library_wares.get_refined_products()) {
         auto consumer_vertices = wares_to_module_vertices[product_name];
@@ -115,7 +105,18 @@ vector<string> get_module_order(AssetsStructures& assets_structures, LibraryWare
     std::ofstream dot_file("modules_graph.dot");
     write_graphviz(dot_file, g, make_label_writer(get(vertex_name, g)));
 
+    // Create a container for the topological sort result
+//    std::list<unsigned long> topologicalOrder;
 
+    // Perform topological sort
+  //  topological_sort(g, std::front_inserter(topologicalOrder));
+
+//    vector<string> ware_list;
+  //  for (auto vertex_id : topologicalOrder) {
+    //    ware_list.push_back(wares_to_module_vertices[vertex]);
+    //}
+    vector<string> module_names;
+    return std::move(module_names);
 }
 
 /**
@@ -144,7 +145,7 @@ int main() {
     auto modules_data = get_modules(unpack_root_path);
     // auto wares_graph = get_wares_graph(wares_data);
     get_module_order(modules_data, wares_data);
-    reorder_plans("/mnt/d/mike/constructionplans.xml", )
+//    reorder_plans("/mnt/d/mike/constructionplans.xml", )
     return 0;
 }
 

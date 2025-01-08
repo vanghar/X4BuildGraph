@@ -61,7 +61,7 @@ LibraryWares::LibraryWares() = default;
 
 void LibraryWares::populate_collections(const xml_node& root_node) {
     auto ware_nodes = root_node.children("ware");
-    std::unordered_map<string, xml_node*> refined_product_nodes;
+    std::unordered_map<string, xml_node> refined_product_nodes;
     for (auto& ware_node : ware_nodes) {
         if (is_raw_material(ware_node)) {
             auto raw_material = to_raw_material(ware_node);
@@ -69,14 +69,14 @@ void LibraryWares::populate_collections(const xml_node& root_node) {
         } else if (is_refined_product(ware_node)) {
             auto refined_product = to_refined_product(ware_node);
             refined_products[refined_product.product_id()] = refined_product;
-            refined_product_nodes[refined_product.product_id()] = &ware_node;
+            refined_product_nodes[refined_product.product_id()] = ware_node;
         }
     }
 
     // Populate dependencies for refined products
     // production/primary/ware subNodes with "ware" attribute value
     for (auto &[name, product_node]: refined_product_nodes) {
-        auto required_wares = get_required_wares(*product_node);
+        auto required_wares = get_required_wares(product_node);
         auto& refined_product = refined_products[name];
         for (const auto &required_ware: required_wares) {
             *refined_product.add_required_wares() = required_ware;
@@ -86,10 +86,9 @@ void LibraryWares::populate_collections(const xml_node& root_node) {
 
 vector<RequiredWare> LibraryWares::get_required_wares(const xml_node& product_node) {
     vector<RequiredWare> required_wares;
-    auto selected_nodes = product_node.select_nodes("//production/primary/ware");
-    for (const auto &selected_node: selected_nodes) {
+    const auto req_ware_nodes = product_node.child("production").child("primary").children("ware");
+    for (const auto &req_ware_node: req_ware_nodes) {
         // The xpath select gets the values rather than the nodes
-        const auto& req_ware_node = selected_node.node().parent();
         auto required_ware = RequiredWare();
         auto ware_name = req_ware_node.attribute("ware").as_string();
         auto req_amount = req_ware_node.attribute("amount").as_int();
