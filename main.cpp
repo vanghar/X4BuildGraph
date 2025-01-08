@@ -106,17 +106,17 @@ vector<string> get_module_order(AssetsStructures& assets_structures, LibraryWare
     write_graphviz(dot_file, g, make_label_writer(get(vertex_name, g)));
 
     // Create a container for the topological sort result
-//    std::list<unsigned long> topologicalOrder;
+    std::list<unsigned long> topologicalOrder;
 
     // Perform topological sort
-  //  topological_sort(g, std::front_inserter(topologicalOrder));
+    topological_sort(g, std::front_inserter(topologicalOrder));
 
-//    vector<string> ware_list;
-  //  for (auto vertex_id : topologicalOrder) {
-    //    ware_list.push_back(wares_to_module_vertices[vertex]);
-    //}
-    vector<string> module_names;
-    return std::move(module_names);
+    vector<string> module_macro_names;
+    for (auto vertex_id : topologicalOrder) {
+        auto macro_name = get(vertex_name, g, vertex_id);
+        module_macro_names.push_back(std::move(macro_name));
+    }
+    return std::move(module_macro_names);
 }
 
 /**
@@ -144,8 +144,8 @@ int main() {
     auto wares_data = get_wares(unpack_root_path);
     auto modules_data = get_modules(unpack_root_path);
     // auto wares_graph = get_wares_graph(wares_data);
-    get_module_order(modules_data, wares_data);
-//    reorder_plans("/mnt/d/mike/constructionplans.xml", )
+    auto module_order = get_module_order(modules_data, wares_data);
+    reorder_plans("/mnt/d/mike/constructionplans.xml", std::move(module_order));
     return 0;
 }
 

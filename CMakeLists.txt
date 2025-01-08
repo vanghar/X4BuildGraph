@@ -20,8 +20,8 @@ add_executable(X4BuildGraph main.cpp
         src/x4/assets_structures.h
         src/x4/enum_helper.cpp
         src/x4/enum_helper.h
-#        src/x4/construction_plans.cpp
-#        src/x4/construction_plans.h
+        src/x4/construction_plans.cpp
+        src/x4/construction_plans.h
 )
 
 #

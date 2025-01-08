@@ -7,7 +7,7 @@
 #include "../common_util.h"
 #include "../xml/xml_attr_util.h"
 
-void reorder_plans(const string& source_file, const vector<string&> macro_order) {
+void reorder_plans(const string source_file, const vector<string> macro_order) {
     xml_document plans_doc;
     plans_doc.load_file(source_file.c_str());
     const auto& root_node = plans_doc.document_element();
@@ -16,18 +16,19 @@ void reorder_plans(const string& source_file, const vector<string&> macro_order)
     auto new_root_node = append_shallow_copy(new_plans_doc, root_node);
 
     for (const auto& plan_node : root_node.children("plan")) {
-        unordered_map<string,xml_node&> entry_node_map;
+        unordered_map<string,vector<xml_node>> entry_node_map;
         for (const auto& entry_node : plan_node.children("entry")) {
             auto macro_name = entry_node.attribute("name").as_string();
-            entry_node_map[macro_name] = entry_node;
+            entry_node_map[macro_name].push_back(entry_node);
         }
-        vector<xml_node&> ordered_entries;
+        vector<xml_node> ordered_entries;
         // NOTE: We only care about the first of each type of node! This gets the factory running
         // as quickly as possible
         for (auto macro_name : macro_order) {
-            if (auto maybe_node_list = get_optional(entry_node_map[macro_name])) {
-                auto first_entry = maybe_node_list[0];
-                delete_at(maybe_node_list, 0);
+            if (auto maybe_node_list = get_optional(entry_node_map, macro_name)) {
+                auto node_list = maybe_node_list.value();
+                auto first_entry = node_list[0];
+                delete_at(node_list, 0);
                 ordered_entries.push_back(first_entry);
             }
         }
