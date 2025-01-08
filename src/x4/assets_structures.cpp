@@ -4,13 +4,12 @@
 
 #include "assets_structures.h"
 
-#include "../xml/xml_parser.h"
 #include <filesystem>
-#include "../xml/xml_node_util.h"
-#include "../xml/xml_attr_util.h"
 #include "enum_helper.h"
 
 namespace fs = std::filesystem;
+using namespace std;
+using namespace pugi;
 
 /*******************************************************************************
 * Helper functions
@@ -20,15 +19,16 @@ namespace fs = std::filesystem;
 // macros/macro.name
 // macros/macro/component.ref
 // macros/macro/properties/cargo.max
-StorageModule to_storage_module(const DOMNode &root_node) {
-    auto macro_node = get_child_nodes(root_node)["macro"][0];
-    const auto component_node = get_child_nodes(*macro_node)["component"][0];
-    const auto cargo_node = get_named_nested_nodes({macro_node}, "properties/cargo")[0];
+StorageModule to_storage_module(const xml_node& root_node) {
+    const auto macro_node = root_node.child("macro");
+    const auto component_node = macro_node.child("component");
+    const auto props_node = macro_node.child("properties");
+    const auto cargo_node = props_node.child("cargo");
 
-    auto module_id = get_named_attr_value(*component_node, "ref");
-    auto macro_name = get_named_attr_value(*macro_node, "name");
-    const auto storage_type = to_storage_type(get_named_attr_value(*cargo_node, "tags"));
-    const auto storage_capacity = stoi(get_named_attr_value(*cargo_node, "max"));
+    auto module_id = component_node.attribute("ref").as_string();
+    auto macro_name = macro_node.attribute("name").as_string();
+    const auto storage_type = to_storage_type(cargo_node.attribute("tags").as_string());
+    const auto storage_capacity = cargo_node.attribute("max").as_int();
 
     StorageModule storage_module;
     storage_module.set_module_id(module_id);
@@ -44,16 +44,17 @@ StorageModule to_storage_module(const DOMNode &root_node) {
 // macros/macro/component.ref
 // macros/macro/properties/production.wares
 // macros/macro/properties/workforce.max
-ProductionModule to_production_module(const DOMNode &root_node) {
-    auto macro_node = get_child_nodes(root_node)["macro"][0];
-    const auto component_node = get_child_nodes(*macro_node)["component"][0];
-    const auto production_node = get_named_nested_nodes({macro_node}, "properties/production")[0];
-    const auto workforce_node = get_named_nested_nodes({macro_node}, "properties/workforce")[0];
+ProductionModule to_production_module(const xml_node& root_node) {
+    const auto macro_node = root_node.child("macro");
+    const auto component_node = macro_node.child("component");
+    const auto props_node = macro_node.child("properties");
+    const auto production_node = props_node.child("production");
+    const auto workforce_node = props_node.child("workforce");
 
-    auto module_id = get_named_attr_value(*component_node, "ref");
-    auto macro_name = get_named_attr_value(*macro_node, "name");
-    auto product_name = get_named_attr_value(*production_node, "wares");
-    auto workforce = stoi(get_named_attr_value(*workforce_node, "max"));
+    auto module_id = component_node.attribute("ref").as_string();
+    auto macro_name = macro_node.attribute("name").as_string();
+    auto product_name = production_node.attribute("wares").as_string();
+    auto workforce = workforce_node.attribute( "max").as_int();
 
     ProductionModule production_module;
     production_module.set_module_id(module_id);
@@ -67,13 +68,13 @@ ProductionModule to_production_module(const DOMNode &root_node) {
 // assets/structures/dock/macros
 // macros/macro.name
 // macros/macro/component.ref
-DockModule to_dock_module(const DOMNode &root_node) {
-    const auto macro_node = get_child_nodes(root_node)["macro"][0];
-    const auto component_node = get_child_nodes(*macro_node)["component"][0];
+DockModule to_dock_module(const xml_node& root_node) {
+    const auto macro_node = root_node.child("macro");
+    const auto component_node = macro_node.child("component");
 
-    auto module_id = get_named_attr_value(*component_node, "ref");
-    auto macro_name = get_named_attr_value(*macro_node, "name");
-    const auto dock_module_type = to_dock_module_type(get_named_attr_value(*macro_node, "class"));
+    auto module_id = component_node.attribute("ref").as_string();
+    auto macro_name = macro_node.attribute("name").as_string();
+    const auto dock_module_type = to_dock_module_type(macro_node.attribute( "class").as_string());
 
     DockModule dock_module;
     dock_module.set_module_id(module_id);
@@ -113,28 +114,30 @@ const unordered_map<string, DockModule>& AssetsStructures::get_dock_modules() {
 }
 
 AssetsStructures AssetsStructures::create(const string &unpack_root_path) {
-    const auto xml_parser = XmlParser::create();
     AssetsStructures assets_structures;
-    assets_structures.populate_collections(xml_parser, unpack_root_path);
+    assets_structures.populate_collections(unpack_root_path);
     return assets_structures;
 }
 
 AssetsStructures::AssetsStructures() = default;
 
-void AssetsStructures::populate_collections(const XmlParser &xml_parser, const string &unpack_root_path) {
+void AssetsStructures::populate_collections(const string &unpack_root_path) {
     for (const auto &storage_path: get_macro_file_paths(unpack_root_path + "/assets/structures/storage/macros")) {
-        auto &root_node = xml_parser.load_file(storage_path);
-        auto storage_module = to_storage_module(root_node);
+        xml_document doc;
+        doc.load_file(storage_path.c_str());
+        auto storage_module = to_storage_module(doc.document_element());
         storage_modules[storage_module.module_id()] = storage_module;
     }
     for (const auto &production_path: get_macro_file_paths(unpack_root_path + "/assets/structures/production/macros")) {
-        auto &root_node = xml_parser.load_file(production_path);
-        auto production_module = to_production_module(root_node);
+        xml_document doc;
+        doc.load_file(production_path.c_str());
+        auto production_module = to_production_module(doc.document_element());
         production_modules[production_module.module_id()] = production_module;
     }
     for (const auto &dock_path: get_macro_file_paths(unpack_root_path + "/assets/structures/dock/macros")) {
-        auto &root_node = xml_parser.load_file(dock_path);
-        auto dock_module = to_dock_module(root_node);
+        xml_document doc;
+        doc.load_file(dock_path.c_str());
+        auto dock_module = to_dock_module(doc.document_element());
         dock_modules[dock_module.module_id()] = dock_module;
     }
 }

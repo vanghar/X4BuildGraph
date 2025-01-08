@@ -3,28 +3,29 @@
 //
 
 #include "library_wares.h"
-#include "../xml/xml_attr_util.h"
 #include "enum_helper.h"
 #include "../common_util.h"
-#include "../xml/xml_node_util.h"
+#include "../xml/xml_attr_util.h"
+
+using namespace pugi;
 
 /*******************************************************************************
 * Helper functions
 *******************************************************************************/
-bool is_raw_material(const DOMNode &dom_node) {
-    const auto tags_attr = get_named_attr(dom_node, "tags");
-    return tags_attr ? string_attr_contains_all(*tags_attr, {"economy", "mineral"}) : false;
+bool is_raw_material(const xml_node& xml_node) {
+    const auto tags_attr = xml_node.attribute("tags");
+    return tags_attr ? string_attr_contains_all(tags_attr, {"economy", "mineral"}) : false;
 }
 
-bool is_refined_product(const DOMNode &dom_node) {
-    const auto tags_attr = get_named_attr(dom_node, "tags");
-    return tags_attr ? string_attr_contains_all(*tags_attr, {"economy", "container"}) : false;
+bool is_refined_product(const xml_node& xml_node) {
+    const auto tags_attr = xml_node.attribute("tags");
+    return tags_attr ? string_attr_contains_all(tags_attr, {"economy", "container"}) : false;
 }
 
-RawMaterial to_raw_material(const DOMNode &dom_node) {
-    const auto material_id = get_named_attr_value(dom_node, "id");
-    const auto storage_type = to_storage_type(get_named_attr_value(dom_node, "transport"));
-    const auto volume = stoi(get_named_attr_value(dom_node, "volume"));
+RawMaterial to_raw_material(const xml_node& xml_node) {
+    const auto material_id = xml_node.attribute("id").as_string();
+    const auto storage_type = to_storage_type(xml_node.attribute( "transport").as_string());
+    const auto volume = xml_node.attribute("volume").as_int();
 
     RawMaterial raw_material;
     raw_material.set_material_id(material_id);
@@ -33,10 +34,10 @@ RawMaterial to_raw_material(const DOMNode &dom_node) {
     return raw_material;
 }
 
-RefinedProduct to_refined_product(const DOMNode &dom_node) {
-    const auto product_id = get_named_attr_value(dom_node, "id");
-    const auto storage_type = to_storage_type(get_named_attr_value(dom_node, "transport"));
-    const auto volume = stoi(get_named_attr_value(dom_node, "volume"));
+RefinedProduct to_refined_product(const xml_node& xml_node) {
+    const auto product_id = xml_node.attribute("id").as_string();
+    const auto storage_type = to_storage_type(xml_node.attribute( "transport").as_string());
+    const auto volume = xml_node.attribute("volume").as_int();
 
     RefinedProduct refined_product;
     refined_product.set_product_id(product_id);
@@ -49,26 +50,26 @@ RefinedProduct to_refined_product(const DOMNode &dom_node) {
 * Class methods
 *******************************************************************************/
 LibraryWares LibraryWares::create(const string &unpack_root_path) {
-    auto xml_parser = XmlParser::create();
-    const auto &root_element = xml_parser.load_file(unpack_root_path + "/libraries/wares.xml");
+    xml_document doc;
+    doc.load_file((unpack_root_path + "/libraries/wares.xml").c_str());
     LibraryWares library_wares;
-    library_wares.populate_collections(root_element);
+    library_wares.populate_collections(doc.document_element());
     return library_wares;
 }
 
 LibraryWares::LibraryWares() = default;
 
-void LibraryWares::populate_collections(const DOMNode &root_element) {
-    auto child_nodes = get_child_nodes(root_element);
-    std::unordered_map<string, DOMNode *> refined_product_nodes;
-    for (const auto child_node: child_nodes["ware"]) {
-        if (is_raw_material(*child_node)) {
-            auto raw_material = to_raw_material(*child_node);
+void LibraryWares::populate_collections(const xml_node& root_node) {
+    auto ware_nodes = root_node.children("ware");
+    std::unordered_map<string, xml_node*> refined_product_nodes;
+    for (auto& ware_node : ware_nodes) {
+        if (is_raw_material(ware_node)) {
+            auto raw_material = to_raw_material(ware_node);
             raw_materials[raw_material.material_id()] = raw_material;
-        } else if (is_refined_product(*child_node)) {
-            auto refined_product = to_refined_product(*child_node);
+        } else if (is_refined_product(ware_node)) {
+            auto refined_product = to_refined_product(ware_node);
             refined_products[refined_product.product_id()] = refined_product;
-            refined_product_nodes[refined_product.product_id()] = child_node;
+            refined_product_nodes[refined_product.product_id()] = &ware_node;
         }
     }
 
@@ -83,13 +84,15 @@ void LibraryWares::populate_collections(const DOMNode &root_element) {
     }
 }
 
-vector<RequiredWare> LibraryWares::get_required_wares(DOMNode &ware_node) {
+vector<RequiredWare> LibraryWares::get_required_wares(const xml_node& product_node) {
     vector<RequiredWare> required_wares;
-    auto required_ware_nodes = get_named_nested_nodes({&ware_node}, "production/primary/ware");
-    for (const auto &req_ware_node: required_ware_nodes) {
+    auto selected_nodes = product_node.select_nodes("//production/primary/ware");
+    for (const auto &selected_node: selected_nodes) {
+        // The xpath select gets the values rather than the nodes
+        const auto& req_ware_node = selected_node.node().parent();
         auto required_ware = RequiredWare();
-        auto ware_name = get_named_attr_value(*req_ware_node, "ware");
-        auto req_amount = std::stoi(get_named_attr_value(*req_ware_node, "amount"));
+        auto ware_name = req_ware_node.attribute("ware").as_string();
+        auto req_amount = req_ware_node.attribute("amount").as_int();
         required_ware.set_required_ware_id(ware_name);
         required_ware.set_amount(req_amount);
 

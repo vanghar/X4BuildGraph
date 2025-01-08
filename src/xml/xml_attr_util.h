@@ -7,63 +7,30 @@
 
 #include <string>
 #include <vector>
-#include <xercesc/dom/DOM.hpp>
+#include <pugixml.hpp>
 
-using namespace xercesc;
 using namespace std;
-
-/**
- * Gets a DOMNode representing the attribute of the given node with the given name.
- * For example for XML:
- * <foo bar="baz"/>
- * get_named_attr(foo_node, "bar")
- * will return bar_node
- * @param dom_node
- * @param name
- * @return
- */
-DOMNode* get_named_attr(const DOMNode& dom_node, const string& name);
-
-/**
- * Gets the value of the given attribute node
- * For example for XML:
- * <foo bar="baz"/>
- * get_attr_value(bar_attr_node, "bar")
- * will return "baz"
- * @param dom_node
- * @return
- */
-string get_attr_value(const DOMNode& dom_node);
-
-/**
- * Gets the value of the attribute of the given node with the given name.
- * For example for XML:
- * <foo bar="baz"/>
- * get_named_attr_value(foo_node, "bar")
- * will return "baz"
- * @param domNode
- * @param name
- * @return
- */
-string get_named_attr_value(const DOMNode& domNode, const string& name);
+using namespace pugi;
 
 /**
  * Determines if the value of the given attribute node contains all the given values.
  * The attribute value is expected contain space separated strings.
- * @param dom_node
+ * @param dom_attr
  * @param required_values
  * @return
  */
-bool string_attr_contains_all(const DOMNode& dom_node, const vector<string>& required_values);
+bool string_attr_contains_all(const xml_attribute& xml_attr, const vector<string>& required_values);
 
 /**
  * Determines if the value of the given attribute node contains all the given values.
  * The attribute value is expected to contain comma separated strings with leading '['
  * and trailing ']' characters.
- * @param dom_node
+ * @param dom_attr
  * @param required_values
  * @return
  */
-bool array_attr_contains_all(const DOMNode& dom_node, const vector<string>& required_values);
+bool array_attr_contains_all(const xml_attribute& xml_attr, const vector<string>& required_values);
+
+xml_node append_shallow_copy(xml_node& target_node, const xml_node& original_node);
 
 #endif //XML_ATTR_UTIL_H

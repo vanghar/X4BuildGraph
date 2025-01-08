@@ -8,7 +8,7 @@
 #include <string>
 #include <unordered_map>
 #include "../../gen/x4_types.pb.h"
-#include "../xml/xml_parser.h"
+#include <pugixml.hpp>
 
 using namespace std;
 
@@ -25,9 +25,9 @@ public:
 private:
     LibraryWares();
 
-    void populate_collections(const DOMNode &dom_element);
+    void populate_collections(const pugi::xml_node& root_node);
 
-    vector<RequiredWare> get_required_wares(DOMNode &product_node);
+    vector<RequiredWare> get_required_wares(const pugi::xml_node& product_node);
 
     unordered_map<string, RefinedProduct> refined_products;
     unordered_map<string, RawMaterial> raw_materials;

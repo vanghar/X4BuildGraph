@@ -7,7 +7,7 @@
 #include <string>
 #include <unordered_map>
 #include "../../gen/x4_types.pb.h"
-#include "../xml/xml_parser.h"
+#include <pugixml.hpp>
 
 using namespace std;
 
@@ -24,7 +24,7 @@ public:
 private:
     AssetsStructures();
 
-    void populate_collections(const XmlParser &xml_parser, const string &unpack_root_path);
+    void populate_collections(const string& unpack_root_path);
 
     // assets/structures/storage/macros
     // macros/macro.name

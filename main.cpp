@@ -2,8 +2,6 @@
 #include <ranges>
 #include <unordered_map>
 
-#include <xercesc/dom/DOM.hpp>
-#include <xercesc/util/PlatformUtils.hpp>
 #include <boost/graph/adjacency_list.hpp>
 #include <boost/graph/graphviz.hpp>
 #include <fstream>
@@ -14,7 +12,8 @@
 // #include <boost/graph/graph_traits.hpp>
 // #include <boost/graph/topological_sort.hpp>
 
-using namespace xercesc;
+#include "src/x4/construction_plans.h"
+
 using namespace std;
 using namespace boost;
 
@@ -66,7 +65,7 @@ Graph get_wares_graph(LibraryWares &library_wares) {
     return g;
 }
 
-void get_structures_graph(AssetsStructures& assets_structures, LibraryWares& library_wares) {
+vector<string> get_module_order(AssetsStructures& assets_structures, LibraryWares& library_wares) {
     std::unordered_map<string, unsigned long> vertices;
     Graph g;
 
@@ -115,6 +114,8 @@ void get_structures_graph(AssetsStructures& assets_structures, LibraryWares& lib
 
     std::ofstream dot_file("modules_graph.dot");
     write_graphviz(dot_file, g, make_label_writer(get(vertex_name, g)));
+
+
 }
 
 /**
@@ -141,9 +142,9 @@ int main() {
     const auto& unpack_root_path = "/mnt/d/Games/Steam/steamapps/common/X4 Foundations/unpacked";
     auto wares_data = get_wares(unpack_root_path);
     auto modules_data = get_modules(unpack_root_path);
-    auto wares_graph = get_wares_graph(wares_data);
-    get_structures_graph(modules_data, wares_data);
-    XMLPlatformUtils::Terminate();
+    // auto wares_graph = get_wares_graph(wares_data);
+    get_module_order(modules_data, wares_data);
+    reorder_plans("/mnt/d/mike/constructionplans.xml", )
     return 0;
 }
 

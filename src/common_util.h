@@ -40,4 +40,11 @@ inline vector<string> split_delimited(const string& raw_value, const string& sep
     return attr_values;
 }
 
+template<typename T>
+void delete_at(vector<T> elements, const int index) {
+    if (index >= 0 && index < elements.size()) {
+        elements.erase(elements.begin() + index);
+    }
+}
+
 #endif //COMMON_UTIL_H
