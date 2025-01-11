@@ -59,15 +59,19 @@ message RequiredWare {
   uint32 amount = 3;
 }
 
+// This type primarily exists to record the production time for the various modules
+// It's read from wares.xml, but the majority of the module properties are taken
+// from assets/structures and merged into the types below.
+message GenericModule {
+  string module_id = 1;
+  string macro_name = 2;
+  uint32 production_time = 3;
+}
+
 // -----------------------------------------------------------------------------
 // Module types
 // These are read from assets/structures/production|storage|dock/macros/
 // -----------------------------------------------------------------------------
-message GenericModule {
-  string module_id = 1;
-  string macro_name = 2;
-}
-
 message StorageModule {
   string module_id = 1;
   string macro_name = 2;
@@ -139,8 +143,26 @@ message DockModule {
   DockModuleType dock_type = 3;
 }
 
-// HabitatModule
-// DefenceModule
+message ConnectionModule {
+  // This is the ID that appears in module_groups.xml and modules.xml
+  string module_id = 1;
+  // This is the ID that appears in constructionplans.xml
+  string macro_name = 2;
+}
+
+message DefenceModule {
+  // This is the ID that appears in module_groups.xml and modules.xml
+  string module_id = 1;
+  // This is the ID that appears in constructionplans.xml
+  string macro_name = 2;
+}
+
+message HabitatModule {
+  // This is the ID that appears in module_groups.xml and modules.xml
+  string module_id = 1;
+  // This is the ID that appears in constructionplans.xml
+  string macro_name = 2;
+}
 
 message BuildEntry {
   // index in the plan of the current module
@@ -160,9 +182,9 @@ message BuildEntry {
 }
 
 message EntryPosition {
-  int32 x_coord = 1;
-  int32 y_coord = 2;
-  int32 z_coord = 3;
+  float x_coord = 1;
+  float y_coord = 2;
+  float z_coord = 3;
 }
 
 message EntryRotation {

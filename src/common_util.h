@@ -9,14 +9,14 @@
 #include <optional>
 #include <unordered_map>
 #include <unordered_set>
-#include <boost/algorithm/string.hpp>
+#include <ranges>
 
 using namespace std;
 
 template <typename T>
 std::unordered_set<T> to_hash_set(vector<T> values) {
     unordered_set<T> unique_vals(values.begin(), values.end());
-    return unique_vals;
+    return std::move(unique_vals);
 }
 
 template<typename K, typename V>
@@ -36,8 +36,11 @@ auto get_optional(T&& map, K&& key)
 
 inline vector<string> split_delimited(const string& raw_value, const string& separator) {
     vector<string> attr_values;
-    boost::split(attr_values, raw_value, boost::is_any_of(separator));
-    return attr_values;
+    auto split_view = views::split(raw_value, separator);
+    for (const auto& token : split_view) {
+        attr_values.emplace_back(token.begin(), token.end());
+    }
+    return std::move(attr_values);
 }
 
 template<typename T>

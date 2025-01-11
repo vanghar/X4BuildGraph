@@ -8,6 +8,6 @@
 #include <vector>
 
 
-void reorder_plans(const std::string source_file, std::vector<std::string> macro_order);
+void reorder_plans(std::string source_file, std::vector<std::string> macro_order);
 
 #endif //CONSTRUCTION_PLANS_H

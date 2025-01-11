@@ -20,7 +20,7 @@ bool value_contains_all(const string& attr_value, const vector<string>& required
 // TODO - support for multi space separators
 // Assumes strings in the format "val1 val2"
 bool string_attr_contains_all(const xml_attribute& xml_attr, const vector<string>& required_values) {
-    string str_value(xml_attr.as_string());
+    const string str_value(xml_attr.as_string());
     return value_contains_all(str_value, required_values, " ");
 }
 
@@ -40,5 +40,5 @@ xml_node append_shallow_copy(xml_node& target_node, const xml_node& original_nod
     for (auto attr = original_node.first_attribute(); attr; attr = attr.next_attribute()) {
         shallow_copy.append_attribute(attr.name()) = attr.value();
     }
-    return std::move(shallow_copy);
+    return shallow_copy;
 }

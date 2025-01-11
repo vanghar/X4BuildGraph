@@ -71,25 +71,25 @@ BuildEntry to_build_entry(const xml_node &entry_node) {
     const auto position_node = offset_node.child("position");
 
     const auto entry_position = build_entry.mutable_position();
-    entry_position->set_x_coord(position_node.attribute("x").as_double());
-    entry_position->set_y_coord(position_node.attribute("y").as_double());
-    entry_position->set_z_coord(position_node.attribute("z").as_double());
+    entry_position->set_x_coord(position_node.attribute("x").as_float());
+    entry_position->set_y_coord(position_node.attribute("y").as_float());
+    entry_position->set_z_coord(position_node.attribute("z").as_float());
 
     if (const auto rotation_node = offset_node.child("rotation")) {
         const auto entry_rotation = build_entry.mutable_rotation();
-        if (const auto pitch = rotation_node.attribute("pitch").as_double())
-            entry_rotation->set_pitch(pitch);
-        if (const auto yaw = rotation_node.attribute("yaw").as_double())
-            entry_rotation->set_yaw(yaw);
-        if (const auto roll = rotation_node.attribute("roll").as_double())
-            entry_rotation->set_roll(roll);
+        if (const auto pitch_attr = rotation_node.attribute("pitch"))
+            entry_rotation->set_pitch(pitch_attr.as_float());
+        if (const auto yaw_attr = rotation_node.attribute("yaw"))
+            entry_rotation->set_yaw(yaw_attr.as_float());
+        if (const auto roll_attr = rotation_node.attribute("roll"))
+            entry_rotation->set_roll(roll_attr.as_float());
     }
     return std::move(build_entry);
 }
 
 // TODO - macro order seems too simplistic because we need to know about the specific
 //   prerequisites for each type of module so we can ensure we build a shortest path
-//   that accounts for them at each stage. 
+//   that accounts for them at each stage.
 void reorder_plans(const string source_file, const vector<string> macro_order) {
     xml_document plans_doc;
     plans_doc.load_file(source_file.c_str());
@@ -165,3 +165,7 @@ void reorder_plans(const string source_file, const vector<string> macro_order) {
         cout << "Failed to save" << endl;
     }
 }
+
+// Graph construction:
+// In edges are configured as the cost (time) of building the module
+//

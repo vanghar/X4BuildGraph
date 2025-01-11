@@ -16,32 +16,41 @@ class AssetsStructures {
 public:
     static AssetsStructures create(const string &unpack_root_path);
 
-    const unordered_map<string, StorageModule>& get_storage_modules();
+    const unordered_map<string, StorageModule> &get_storage_modules();
 
-    const unordered_map<string, ProductionModule>& get_production_modules();
+    const unordered_map<string, ProductionModule> &get_production_modules();
 
-    const unordered_map<string, DockModule>& get_dock_modules();
+    const unordered_map<string, DockModule> &get_dock_modules();
+
+    const unordered_map<string, ConnectionModule> &get_connection_modules();
+
+    const unordered_map<string, DefenceModule> &get_defence_modules();
+
+    const unordered_map<string, HabitatModule> &get_habitat_modules();
+
 private:
     AssetsStructures();
 
-    void populate_collections(const string& unpack_root_path);
+    void populate_collections(const string &unpack_root_path);
 
-    // assets/structures/storage/macros
-    // macros/macro.name
-    // macros/macro/component.ref
-    // macros/macro/properties/cargo.max
+    void add_storage_module(const pugi::xml_node &root_node);
+
+    void add_production_module(const pugi::xml_node &root_node);
+
+    void add_dock_module(const pugi::xml_node &root_node);
+
+    void add_connection_module(const pugi::xml_node &root_node);
+
+    void add_habitat_module(const pugi::xml_node &root_node);
+
+    void add_defence_module(const pugi::xml_node &root_node);
+
     unordered_map<string, StorageModule> storage_modules;
-    // assets/structures/production/macros
-    // macros/macro.name
-    // macros/macro/component.ref
-    // macros/macro/properties/production.wares
-    // macros/macro/properties/workforce.max
     unordered_map<string, ProductionModule> production_modules;
-    // assets/structures/dock/macros
-    // macros/macro.name
-    // macros/macro/component.ref
     unordered_map<string, DockModule> dock_modules;
-    // TODO habitat modules, defence modules
+    unordered_map<string, ConnectionModule> connection_modules;
+    unordered_map<string, DefenceModule> defence_modules;
+    unordered_map<string, HabitatModule> habitat_modules;
 };
 
 

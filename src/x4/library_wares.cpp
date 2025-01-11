@@ -22,6 +22,11 @@ bool is_refined_product(const xml_node& xml_node) {
     return tags_attr ? string_attr_contains_all(tags_attr, {"economy", "container"}) : false;
 }
 
+bool is_module(const xml_node& xml_node) {
+    const auto tags_attr = xml_node.attribute("tags");
+    return tags_attr ? string_attr_contains_all(tags_attr, {"module"}) : false;
+}
+
 RawMaterial to_raw_material(const xml_node& xml_node) {
     const auto material_id = xml_node.attribute("id").as_string();
     const auto storage_type = to_storage_type(xml_node.attribute( "transport").as_string());
@@ -31,7 +36,7 @@ RawMaterial to_raw_material(const xml_node& xml_node) {
     raw_material.set_material_id(material_id);
     raw_material.set_storage_type(storage_type);
     raw_material.set_volume(volume);
-    return raw_material;
+    return std::move(raw_material);
 }
 
 RefinedProduct to_refined_product(const xml_node& xml_node) {
@@ -41,7 +46,7 @@ RefinedProduct to_refined_product(const xml_node& xml_node) {
     const auto product_id = xml_node.attribute("id").as_string();
     const auto storage_type = to_storage_type(xml_node.attribute( "transport").as_string());
     const auto volume = xml_node.attribute("volume").as_int();
-    const auto production_time = production_node.attribute("time").as_float();
+    const auto production_time = production_node.attribute("time").as_int();
     const auto production_amount = production_node.attribute("amount").as_int();
     const auto workforce_factor = effect_node.attribute("product").as_float();
 
@@ -52,7 +57,22 @@ RefinedProduct to_refined_product(const xml_node& xml_node) {
     refined_product.set_production_time(production_time);
     refined_product.set_production_amount(production_amount);
     refined_product.set_workforce_factor(workforce_factor);
-    return refined_product;
+    return std::move(refined_product);
+}
+
+GenericModule to_generic_module(const xml_node& xml_node) {
+    const auto production_node = xml_node.child("production");
+    const auto component_node = xml_node.child("component");
+
+    const auto module_id = xml_node.attribute("id").as_string();
+    const auto production_time = production_node.attribute("time").as_int();
+    const auto macro_name = component_node.attribute("ref").as_string();
+
+    GenericModule generic_module;
+    generic_module.set_module_id(module_id);
+    generic_module.set_macro_name(macro_name);
+    generic_module.set_production_time(production_time);
+    return std::move(generic_module);
 }
 
 /*******************************************************************************
