@@ -35,14 +35,23 @@ RawMaterial to_raw_material(const xml_node& xml_node) {
 }
 
 RefinedProduct to_refined_product(const xml_node& xml_node) {
+    const auto production_node = xml_node.child("production");
+    const auto effect_node = production_node.child("effects").child("effect");
+
     const auto product_id = xml_node.attribute("id").as_string();
     const auto storage_type = to_storage_type(xml_node.attribute( "transport").as_string());
     const auto volume = xml_node.attribute("volume").as_int();
+    const auto production_time = production_node.attribute("time").as_float();
+    const auto production_amount = production_node.attribute("amount").as_int();
+    const auto workforce_factor = effect_node.attribute("product").as_float();
 
     RefinedProduct refined_product;
     refined_product.set_product_id(product_id);
     refined_product.set_storage_type(storage_type);
-    refined_product.set_volume(volume);
+    refined_product.set_unit_volume(volume);
+    refined_product.set_production_time(production_time);
+    refined_product.set_production_amount(production_amount);
+    refined_product.set_workforce_factor(workforce_factor);
     return refined_product;
 }
 

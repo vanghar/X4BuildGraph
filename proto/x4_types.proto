@@ -32,9 +32,25 @@ message RawMaterial {
 // wares.xml: <ware id="plasmaconductors" group="hightech" transport="container" volume="32" tags="container economy">
 message RefinedProduct {
   string product_id = 1;
+  // What kind of storage the product requires (typically 'container' for refined products)
   StorageType storage_type = 2;
-  uint32 volume = 3;
+  // How much storage volume is required for 1 unit of the product
+  uint32 unit_volume = 3;
+  // The other wares required to produce this product in a factory
   repeated RequiredWare required_wares = 4;
+  // How long it takes for a production run
+  uint32 production_time = 5;
+  // How many units are produced in one production run
+  uint32 production_amount = 6;
+  // Multiplier applied to base production amount when at peak workforce
+  // The multiplier is scaled back proportionately when limited workforce is available
+  // For example: plasmaconductors amount=44 (this appears to be multiplied by 4)
+  // workforce factor = .43
+  // So at peak workforce, output is 44 * 4 * 1.43 = 252
+  // Workforce max is 225, so at 100 workforce for example:
+  // 100/225 * .43 = ~.19
+  // 44 * 4 * 1.19 = 210
+  float workforce_factor = 7;
 }
 
 message RequiredWare {
@@ -76,8 +92,8 @@ message ProductionModule {
   // This is the name of the ware that is produced by this factory type
   // eg. antimattercells
   string product_name = 4;
-
-  uint32 workforce = 5;
+  // Maximum workforce capacity
+  uint32 workforce_max = 5;
 
   // Information about what factory types are required to produce this module are derived from the wares graph
   // This contains the details of what's needed to make it, so can be used to build
@@ -125,3 +141,32 @@ message DockModule {
 
 // HabitatModule
 // DefenceModule
+
+message BuildEntry {
+  // index in the plan of the current module
+  uint32 entry_index = 1;
+  // macro name of the current module
+  string macro_name = 2;
+  // The name of the current module's connection point that is connected to the predecessor
+  string local_connection = 3;
+  // index of predecessor module
+  uint32 predecessor_index = 4;
+  // The name of the predecessor's connection point that is connected to the current module
+  string predecessor_connection = 5;
+  // x,y,z coordinates for this module's position in the station plot
+  EntryPosition position = 6;
+  // pitch, yaw, roll for this module's orientation in the station plot
+  EntryRotation rotation = 7;
+}
+
+message EntryPosition {
+  int32 x_coord = 1;
+  int32 y_coord = 2;
+  int32 z_coord = 3;
+}
+
+message EntryRotation {
+  float pitch = 1;
+  float yaw   = 2;
+  float roll  = 3;
+}

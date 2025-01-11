@@ -54,13 +54,13 @@ ProductionModule to_production_module(const xml_node& root_node) {
     auto module_id = component_node.attribute("ref").as_string();
     auto macro_name = macro_node.attribute("name").as_string();
     auto product_name = production_node.attribute("wares").as_string();
-    auto workforce = workforce_node.attribute( "max").as_int();
+    auto workforce_max = workforce_node.attribute( "max").as_int();
 
     ProductionModule production_module;
     production_module.set_module_id(module_id);
     production_module.set_macro_name(macro_name);
     production_module.set_product_name(product_name);
-    production_module.set_workforce(workforce);
+    production_module.set_workforce_max(workforce_max);
 
     return production_module;
 }
