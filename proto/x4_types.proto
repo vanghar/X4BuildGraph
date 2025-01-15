@@ -164,6 +164,16 @@ message HabitatModule {
   string macro_name = 2;
 }
 
+// Module type for ship construction
+message BuildModule {
+  // This is the ID that appears in module_groups.xml and modules.xml
+  string module_id = 1;
+  // This is the ID that appears in constructionplans.xml
+  string macro_name = 2;
+  // Maximum workforce capacity
+  uint32 workforce_max = 3;
+}
+
 message BuildEntry {
   // index in the plan of the current module
   uint32 entry_index = 1;

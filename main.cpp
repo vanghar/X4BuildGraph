@@ -136,6 +136,15 @@ vector<string> get_module_order(AssetsStructures& assets_structures, LibraryWare
 void generateModuleGraph() {
 }
 
+void print_modules_workforce_ratios(AssetsStructures& assets_structures) {
+    auto& production_modules = assets_structures.get_production_modules();
+    auto& build_modules = assets_structures.get_build_modules();
+    for (const auto& [module_id, module] : production_modules) {
+        const long wf_max = module.workforce_max();
+        cout << module_id << "\t" << 1000 / wf_max << "\t" << 500 / wf_max << "\t" << 250 / wf_max << endl;
+    }
+}
+
 // TIP To <b>Run</b> code, press <shortcut actionId="Run"/> or
 // click the <icon src="AllIcons.Actions.Execute"/> icon in the gutter.
 int main() {
@@ -143,9 +152,10 @@ int main() {
     const auto& unpack_root_path = "/mnt/d/Games/Steam/steamapps/common/X4 Foundations/unpacked";
     auto wares_data = get_wares(unpack_root_path);
     auto modules_data = get_modules(unpack_root_path);
+    print_modules_workforce_ratios(modules_data);
     // auto wares_graph = get_wares_graph(wares_data);
-    auto module_order = get_module_order(modules_data, wares_data);
-    reorder_plans("/mnt/d/mike/constructionplans.xml", std::move(module_order));
+    // auto module_order = get_module_order(modules_data, wares_data);
+    // reorder_plans("/mnt/d/mike/constructionplans.xml", std::move(module_order));
     return 0;
 }
 

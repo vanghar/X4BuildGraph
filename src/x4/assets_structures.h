@@ -28,6 +28,8 @@ public:
 
     const unordered_map<string, HabitatModule> &get_habitat_modules();
 
+    const unordered_map<string, BuildModule> &get_build_modules();
+
 private:
     AssetsStructures();
 
@@ -45,12 +47,15 @@ private:
 
     void add_defence_module(const pugi::xml_node &root_node);
 
+    void add_build_module(const pugi::xml_node &root_node);
+
     unordered_map<string, StorageModule> storage_modules;
     unordered_map<string, ProductionModule> production_modules;
     unordered_map<string, DockModule> dock_modules;
     unordered_map<string, ConnectionModule> connection_modules;
     unordered_map<string, DefenceModule> defence_modules;
     unordered_map<string, HabitatModule> habitat_modules;
+    unordered_map<string, BuildModule> build_modules;
 };
 
 

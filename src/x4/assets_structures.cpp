@@ -127,6 +127,24 @@ HabitatModule to_habitat_module(const xml_node &root_node) {
     return habitat_module;
 }
 
+BuildModule to_build_module(const xml_node &root_node) {
+    const auto macro_node = root_node.child("macro");
+    const auto component_node = macro_node.child("component");
+    const auto props_node = macro_node.child("properties");
+    const auto workforce_node = props_node.child("workforce");
+
+    auto module_id = component_node.attribute("ref").as_string();
+    auto macro_name = macro_node.attribute("name").as_string();
+    auto workforce_max = workforce_node.attribute("max").as_int();
+
+    BuildModule build_module;
+    build_module.set_module_id(module_id);
+    build_module.set_macro_name(macro_name);
+    build_module.set_workforce_max(workforce_max);
+
+    return build_module;
+}
+
 vector<string> get_macro_file_paths(const string &dir_path) {
     vector<string> file_paths;
     for (const auto &entry: fs::directory_iterator(dir_path)) {
@@ -168,6 +186,10 @@ const unordered_map<string, HabitatModule> &AssetsStructures::get_habitat_module
     return habitat_modules;
 }
 
+const unordered_map<string, BuildModule> & AssetsStructures::get_build_modules() {
+    return build_modules;
+}
+
 AssetsStructures AssetsStructures::create(const string &unpack_root_path) {
     AssetsStructures assets_structures;
     assets_structures.populate_collections(unpack_root_path);
@@ -206,21 +228,32 @@ void AssetsStructures::add_defence_module(const pugi::xml_node &root_node) {
     defence_modules[defence_module.module_id()] = defence_module;
 }
 
+void AssetsStructures::add_build_module(const pugi::xml_node &root_node) {
+    auto build_module = to_build_module(root_node);
+    build_modules[build_module.module_id()] = build_module;
+}
+
 void AssetsStructures::populate_collections(const string &unpack_root_path) {
-    unordered_map<string, function<void(AssetsStructures, const xml_node &)> > populator_lookup = {
+    using MethodPtr = void (AssetsStructures::*)(const xml_node&);
+    unordered_map<string, MethodPtr> populator_lookup = {
         {"/assets/structures/storage/macros", &AssetsStructures::add_storage_module},
         {"/assets/structures/production/macros", &AssetsStructures::add_production_module},
         {"/assets/structures/dock/macros", &AssetsStructures::add_dock_module},
-        {"/assets/structures/connection/macros", &AssetsStructures::add_connection_module},
+        {"/assets/structures/connectionmodules/macros", &AssetsStructures::add_connection_module},
         {"/assets/structures/habitat/macros", &AssetsStructures::add_habitat_module},
         {"/assets/structures/defence/macros", &AssetsStructures::add_defence_module},
+        {"/assets/structures/buildmodule/macros", &AssetsStructures::add_build_module},
+// processingmodule not included if scrap required
     };
 
-    for (const auto &[macro_path, adder_fn]: populator_lookup) {
-        for (const auto &macro_file: get_macro_file_paths(macro_path)) {
+    // const auto self = this;
+
+    for (const auto &[macro_sub_dir, adder_fn]: populator_lookup) {
+        const auto macro_file_dir = unpack_root_path + macro_sub_dir;
+        for (const auto &macro_file: get_macro_file_paths(macro_file_dir)) {
             xml_document doc;
             doc.load_file(macro_file.c_str());
-            adder_fn(*this, doc.document_element());
+            (this->*adder_fn)(doc.document_element());
         }
     }
 }
